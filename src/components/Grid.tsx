@@ -19,7 +19,7 @@ interface ContextMenuProps {
 }
 
 interface GridProps {
-    onNodeSelect: (_nodeId: string | null) => void;
+    onNodeSelect: (_node: Node | null) => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -178,8 +178,15 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
     }, []);
 
     useEffect(() => {
-        onNodeSelect(selectedNodeId);
-    }, [selectedNodeId, onNodeSelect]);
+        if (selectedNodeId) {
+            const selectedNode = nodes.find(
+                (node) => node.id === selectedNodeId
+            );
+            onNodeSelect(selectedNode ?? null);
+        } else {
+            onNodeSelect(null);
+        }
+    }, [selectedNodeId, onNodeSelect, nodes]);
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {

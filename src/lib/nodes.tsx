@@ -1,3 +1,6 @@
+import ConsolePanel from "@/components/nodes/Console/ConsolePanel";
+import LLMPanel from "@/components/nodes/LLM/LLMPanel";
+
 export interface Connector {
     id: string;
     type: "input" | "output";
@@ -20,6 +23,7 @@ export interface Node {
         _screenX: number,
         _screenY: number
     ) => ConnectorPosition[];
+    getPanelContent: () => React.ReactElement;
 }
 
 export class LLMNode implements Node {
@@ -61,6 +65,10 @@ export class LLMNode implements Node {
             }
         ];
     }
+
+    getPanelContent(): React.ReactElement {
+        return <LLMPanel />;
+    }
 }
 
 export class ConsoleNode implements Node {
@@ -92,5 +100,9 @@ export class ConsoleNode implements Node {
                 y: screenY
             }
         ];
+    }
+
+    getPanelContent(): React.ReactElement {
+        return <ConsolePanel />;
     }
 }
