@@ -12,7 +12,6 @@ export const BottomPanel: React.FC<BottomPanelProps> = ({ selectedNodeId }) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Handle console input submission
         setConsoleInput("");
     };
 

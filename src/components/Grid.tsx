@@ -1,21 +1,25 @@
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ConsoleNode, LLMNode, Node } from "../lib/nodes";
+import { ConsoleNode as ConsoleNodeComponent } from "./nodes/ConsoleNode";
+import { LLMNode as LLMNodeComponent } from "./nodes/LLMNode";
 
-interface GraphNode {
+interface Wire {
     id: string;
-    x: number;
-    y: number;
-    type: "console";
+    fromNode: string;
+    fromConnector: string;
+    toNode: string;
+    toConnector: string;
 }
 
 interface ContextMenuProps {
     x: number;
     y: number;
-    onAddNode: (x: number, y: number) => void;
+    onAddNode: (_x: number, _y: number, _type: "console" | "llm") => void;
     onClose: () => void;
 }
 
 interface GridProps {
-    onNodeSelect: (nodeId: string | null) => void;
+    onNodeSelect: (_nodeId: string | null) => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -28,7 +32,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Element)) {
+            if (
+                menuRef.current &&
+                !menuRef.current.contains(e.target as Element)
+            ) {
                 onClose();
             }
         };
@@ -39,6 +46,17 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             document.removeEventListener("mousedown", handleClickOutside, true);
         };
     }, [onClose]);
+
+    const buttonStyle = {
+        display: "block",
+        width: "100%",
+        padding: "8px 16px",
+        textAlign: "left" as const,
+        backgroundColor: "transparent",
+        border: "none",
+        color: "white",
+        cursor: "pointer"
+    };
 
     return (
         <div
@@ -57,19 +75,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode(x, y);
+                    onAddNode(x, y, "console");
                     onClose();
                 }}
-                style={{
-                    display: "block",
-                    width: "100%",
-                    padding: "8px 16px",
-                    textAlign: "left",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    color: "white",
-                    cursor: "pointer"
-                }}
+                style={buttonStyle}
                 onMouseEnter={(e) =>
                     (e.currentTarget.style.backgroundColor = "rgb(55, 65, 81)")
                 }
@@ -79,12 +88,43 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             >
                 Add Console
             </button>
+            <button
+                onMouseDown={(e) => {
+                    e.stopPropagation();
+                    onAddNode(x, y, "llm");
+                    onClose();
+                }}
+                style={buttonStyle}
+                onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "rgb(55, 65, 81)")
+                }
+                onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                }
+            >
+                Add LLM
+            </button>
         </div>
     );
 };
 
-const GRID_SIZE = 50;
-const MAJOR_GRID_SIZE = 250;
+const Wire: React.FC<{
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    selected?: boolean;
+}> = ({ startX, startY, endX, endY, selected }) => {
+    const path = `M ${startX} ${startY} C ${startX + 100} ${startY}, ${endX - 100} ${endY}, ${endX} ${endY}`;
+    return (
+        <path
+            d={path}
+            stroke={selected ? "rgb(167, 139, 250)" : "rgb(75, 85, 99)"}
+            strokeWidth={2}
+            fill="none"
+        />
+    );
+};
 
 // Subtle theme colors
 const ORIGIN_COLOR = "rgba(167, 139, 250, 0.6)"; // Purple accent for origin
@@ -92,9 +132,8 @@ const MAJOR_COLOR = "rgba(209, 213, 219, 0.2)"; // Light grey for major
 const MINOR_COLOR = "rgba(209, 213, 219, 0.1)"; // Lighter grey for minor
 const BG_COLOR = "rgba(17, 24, 39, 0.3)"; // Dark grey background
 
-const NODE_WIDTH = 150;
-const NODE_HEIGHT = 80;
-const CONSOLE_NODE_SIZE = 20;
+const GRID_SIZE = 50;
+const MAJOR_GRID_SIZE = 250;
 
 export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -104,7 +143,8 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
         width: 0,
         height: 0
     });
-    const [nodes, setNodes] = useState<GraphNode[]>([]);
+    const [nodes, setNodes] = useState<Node[]>([]);
+    const [wires, setWires] = useState<Wire[]>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [contextMenu, setContextMenu] = useState<{
         x: number;
@@ -115,6 +155,14 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
         startX: number;
         startY: number;
     } | null>(null);
+    const [draggingWire, setDraggingWire] = useState<{
+        fromNode: string;
+        fromConnector: string;
+        type: "input" | "output";
+        startX: number;
+        startY: number;
+    } | null>(null);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
     useEffect(() => {
         const updateDimensions = () => {
@@ -148,8 +196,12 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
         [position]
     );
 
+    console.log(mousePosition);
+
     const handleMouseMove = useCallback(
         (e: MouseEvent) => {
+            setMousePosition({ x: e.clientX, y: e.clientY });
+
             if (isDragging) {
                 setPosition({
                     x: dragStart.x - e.clientX,
@@ -157,60 +209,147 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
                 });
             } else if (draggingNode) {
                 setNodes((prevNodes) =>
-                    prevNodes.map((node) =>
-                        node.id === draggingNode.id
-                            ? {
-                                  ...node,
-                                  x: draggingNode.startX + e.clientX,
-                                  y: draggingNode.startY + e.clientY
-                              }
-                            : node
-                    )
+                    prevNodes.map((node) => {
+                        if (node.id !== draggingNode.id) {
+                            return node;
+                        }
+
+                        const newX = draggingNode.startX + e.clientX;
+                        const newY = draggingNode.startY + e.clientY;
+
+                        // Create new instance of the same node type with updated position
+                        if (node.type === "llm") {
+                            return new LLMNode(node.id, newX, newY);
+                        }
+
+                        return new ConsoleNode(node.id, newX, newY);
+                    })
                 );
             }
         },
-        [isDragging, dragStart, draggingNode, position, viewportDimensions]
+        [isDragging, dragStart, draggingNode]
+    );
+
+    const handleStartConnection = useCallback(
+        (connectorId: string, type: "input" | "output", nodeId: string) => {
+            const node = nodes.find((n) => n.id === nodeId);
+            if (!node) {
+                return;
+            }
+
+            const centerX = viewportDimensions.width / 2;
+            const centerY = viewportDimensions.height / 2;
+            const positions = node.getConnectorPositions(
+                node.x - position.x + centerX,
+                node.y - position.y + centerY
+            );
+            const connectorPos = positions.find((p) => p.id === connectorId);
+
+            if (!connectorPos) {
+                return;
+            }
+
+            setDraggingWire({
+                fromNode: nodeId,
+                fromConnector: connectorId,
+                type,
+                startX: connectorPos.x,
+                startY: connectorPos.y
+            });
+        },
+        [nodes, position, viewportDimensions]
+    );
+
+    const handleEndConnection = useCallback(
+        (connectorId: string, type: "input" | "output", nodeId: string) => {
+            if (!draggingWire) {
+                return;
+            }
+
+            // Only allow connecting output to input
+            if (draggingWire.type === type) {
+                return;
+            }
+
+            // Determine which connector is input and which is output
+            let fromNode;
+            let fromConnector;
+            let toNode;
+            let toConnector;
+
+            if (draggingWire.type === "output") {
+                fromNode = draggingWire.fromNode;
+                fromConnector = draggingWire.fromConnector;
+                toNode = nodeId;
+                toConnector = connectorId;
+            } else {
+                fromNode = nodeId;
+                fromConnector = connectorId;
+                toNode = draggingWire.fromNode;
+                toConnector = draggingWire.fromConnector;
+            }
+
+            if (wires.some((w) => w.fromConnector === fromConnector)) {
+                return;
+            }
+
+            // Add new wire
+            setWires((prev) => [
+                ...prev,
+                {
+                    id: crypto.randomUUID(),
+                    fromNode,
+                    fromConnector,
+                    toNode,
+                    toConnector
+                }
+            ]);
+
+            setDraggingWire(null);
+        },
+        [draggingWire, wires]
     );
 
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
         setDraggingNode(null);
+        setDraggingWire(null);
     }, []);
 
-    const handleContextMenu = useCallback(
-        (e: React.MouseEvent) => {
-            e.preventDefault();
-            setContextMenu({ x: e.clientX, y: e.clientY });
-        }, []);
+    console.log(draggingWire);
+
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        setContextMenu({ x: e.clientX, y: e.clientY });
+    }, []);
 
     const handleAddNode = useCallback(
-        (clientX: number, clientY: number) => {
+        (clientX: number, clientY: number, type: "console" | "llm") => {
             const centerX = viewportDimensions.width / 2;
             const centerY = viewportDimensions.height / 2;
             const gridX = clientX - centerX + position.x;
             const gridY = clientY - centerY + position.y;
+            const id = crypto.randomUUID();
 
-            const newNode: GraphNode = {
-                id: crypto.randomUUID(),
-                x: gridX,
-                y: gridY,
-                type: "console"
-            };
+            const newNode =
+                type === "console"
+                    ? new ConsoleNode(id, gridX, gridY)
+                    : new LLMNode(id, gridX, gridY);
+
             setNodes((prev) => [...prev, newNode]);
         },
         [position, viewportDimensions]
     );
 
     useEffect(() => {
-        if (isDragging || draggingNode) {
-            window.addEventListener("mousemove", handleMouseMove);
-            window.addEventListener("mouseup", handleMouseUp);
-        }
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+
         return () => {
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
-    }, [isDragging, draggingNode, handleMouseMove, handleMouseUp]);
+    }, [handleMouseMove, handleMouseUp]);
 
     const getGridLines = () => {
         const lines = [];
@@ -225,7 +364,7 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
 
         // Draw minor grid lines
         for (let x = startX; x <= endX; x += GRID_SIZE) {
-            const isOrigin = x == 0;
+            const isOrigin = x === 0;
             const isMajor = x % MAJOR_GRID_SIZE === 0;
             lines.push(
                 <line
@@ -247,7 +386,7 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
         }
 
         for (let y = startY; y <= endY; y += GRID_SIZE) {
-            const isOrigin = y == 0;
+            const isOrigin = y === 0;
             const isMajor = y % MAJOR_GRID_SIZE === 0;
             lines.push(
                 <line
@@ -271,6 +410,74 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
         return lines;
     };
 
+    const renderWires = useCallback(() => {
+        const centerX = viewportDimensions.width / 2;
+        const centerY = viewportDimensions.height / 2;
+
+        const wiredElements = wires.map((wire) => {
+            const fromNode = nodes.find((n) => n.id === wire.fromNode);
+            const toNode = nodes.find((n) => n.id === wire.toNode);
+            if (!fromNode || !toNode) {
+                return null;
+            }
+
+            const fromPositions = fromNode.getConnectorPositions(
+                fromNode.x - position.x + centerX,
+                fromNode.y - position.y + centerY
+            );
+            const toPositions = toNode.getConnectorPositions(
+                toNode.x - position.x + centerX,
+                toNode.y - position.y + centerY
+            );
+
+            const fromConnector = fromPositions.find(
+                (p) => p.id === wire.fromConnector
+            );
+            const toConnector = toPositions.find(
+                (p) => p.id === wire.toConnector
+            );
+            if (!fromConnector || !toConnector) {
+                return null;
+            }
+
+            return (
+                <Wire
+                    key={wire.id}
+                    startX={fromConnector.x}
+                    startY={fromConnector.y}
+                    endX={toConnector.x}
+                    endY={toConnector.y}
+                    selected={
+                        selectedNodeId === wire.fromNode ||
+                        selectedNodeId === wire.toNode
+                    }
+                />
+            );
+        });
+
+        if (draggingWire) {
+            wiredElements.push(
+                <Wire
+                    key="dragging"
+                    startX={draggingWire.startX}
+                    startY={draggingWire.startY}
+                    endX={mousePosition.x}
+                    endY={mousePosition.y}
+                />
+            );
+        }
+
+        return wiredElements;
+    }, [
+        wires,
+        nodes,
+        position,
+        viewportDimensions,
+        selectedNodeId,
+        draggingWire,
+        mousePosition
+    ]);
+
     const renderNodes = useCallback(() => {
         const centerX = viewportDimensions.width / 2;
         const centerY = viewportDimensions.height / 2;
@@ -279,82 +486,68 @@ export const Grid: React.FC<GridProps> = ({ onNodeSelect }) => {
             const screenX = node.x - position.x + centerX;
             const screenY = node.y - position.y + centerY;
 
+            const handleNodeMouseDown = (e: React.MouseEvent, id: string) => {
+                if (e.button === 0) {
+                    e.stopPropagation();
+                    setDraggingNode({
+                        id,
+                        startX: node.x - e.clientX,
+                        startY: node.y - e.clientY
+                    });
+                    setSelectedNodeId(id);
+                }
+            };
+
+            if (node.type === "llm") {
+                return (
+                    <LLMNodeComponent
+                        key={node.id}
+                        id={node.id}
+                        screenX={screenX}
+                        screenY={screenY}
+                        selected={selectedNodeId === node.id}
+                        onMouseDown={handleNodeMouseDown}
+                        onStartConnection={handleStartConnection}
+                        onEndConnection={handleEndConnection}
+                    />
+                );
+            }
+
             return (
-                <g key={node.id}>
-                    <rect
-                        x={screenX - NODE_WIDTH / 2}
-                        y={screenY - NODE_HEIGHT / 2}
-                        width={NODE_WIDTH}
-                        height={NODE_HEIGHT}
-                        fill={
-                            selectedNodeId === node.id
-                                ? "rgba(167, 139, 250, 0.3)"
-                                : "rgba(75, 85, 99, 0.3)"
-                        }
-                        stroke={
-                            selectedNodeId === node.id
-                                ? "rgb(167, 139, 250, 0.8)"
-                                : "rgb(75, 85, 99, 0.8)"
-                        }
-                        strokeWidth={2}
-                        rx={4}
-                        style={{ cursor: "pointer" }}
-                        onMouseDown={(e) => {
-                            if (e.button === 0) {
-                                e.stopPropagation();
-                                setDraggingNode({
-                                    id: node.id,
-                                    startX: node.x - e.clientX,
-                                    startY: node.y - e.clientY
-                                });
-                                setSelectedNodeId(node.id);
-                            }
-                        }}
-                    />
-                    {/* Console node circle */}
-                    <circle
-                        cx={screenX + NODE_WIDTH / 2}
-                        cy={screenY}
-                        r={CONSOLE_NODE_SIZE / 2}
-                        fill="rgb(75, 85, 99, 1)"
-                        stroke="rgb(75, 85, 99, 0.8)"
-                        strokeWidth="2"
-                        style={{
-                            cursor: "pointer",
-                            transition: "stroke 0.2s"
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.stroke =
-                                "rgb(167, 139, 250, 1)";
-                            e.currentTarget.style.fill =
-                                "rgb(167, 139, 250, 1)";
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.fill = "rgb(75, 85, 99, 1)";
-                            e.currentTarget.style.stroke =
-                                "rgb(75, 85, 99, 0.8)";
-                        }}
-                        onMouseDown={(e) => {
-                            e.stopPropagation();
-                        }}
-                    />
-                </g>
+                <ConsoleNodeComponent
+                    key={node.id}
+                    id={node.id}
+                    screenX={screenX}
+                    screenY={screenY}
+                    selected={selectedNodeId === node.id}
+                    onMouseDown={handleNodeMouseDown}
+                    onStartConnection={handleStartConnection}
+                    onEndConnection={handleEndConnection}
+                />
             );
         });
-    }, [nodes, viewportDimensions, position, selectedNodeId]);
+    }, [
+        nodes,
+        position,
+        viewportDimensions,
+        selectedNodeId,
+        handleStartConnection,
+        handleEndConnection
+    ]);
 
     return (
         <div
             className="h-full w-full overflow-hidden"
+            style={{
+                backgroundColor: BG_COLOR,
+                cursor: isDragging ? "grabbing" : "default"
+            }}
             onMouseDown={handleMouseDown}
             onContextMenu={handleContextMenu}
-            style={{ cursor: isDragging ? "grabbing" : "default" }}
         >
-            <svg
-                className="h-full w-full"
-                style={{ backgroundColor: BG_COLOR }}
-            >
+            <svg className="h-full w-full">
                 {getGridLines()}
+                {renderWires()}
                 {renderNodes()}
             </svg>
             {contextMenu && (
