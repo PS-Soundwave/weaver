@@ -15,7 +15,7 @@ interface Wire {
 interface ContextMenuProps {
     x: number;
     y: number;
-    onAddNode: (_node: Node) => void;
+    onAddNode: (_f: (_x: number, _y: number) => Node) => void;
     onClose: () => void;
 }
 
@@ -72,7 +72,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode(new ConsoleNode(crypto.randomUUID(), x, y));
+                    onAddNode(
+                        (x, y) => new ConsoleNode(crypto.randomUUID(), x, y)
+                    );
                     onClose();
                 }}
                 style={buttonStyle}
@@ -88,7 +90,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode(new LLMNode(crypto.randomUUID(), x, y));
+                    onAddNode((x, y) => new LLMNode(crypto.randomUUID(), x, y));
                     onClose();
                 }}
                 style={buttonStyle}
@@ -139,8 +141,9 @@ export const Grid: React.FC = () => {
         selectedNode,
         addNode,
         /*removeNode,*/ addWire,
-        /*removeWire,*/ moveNode,
-        setSelectedNode
+        /*removeWire,*/
+        setSelectedNode,
+        updateNode
     } = useStore();
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(
@@ -164,6 +167,22 @@ export const Grid: React.FC = () => {
     } | null>(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const containerRef = useRef(null);
+
+    const addNodeCallback = useCallback(
+        (f) => {
+            const rect = containerRef.current?.getBoundingClientRect();
+            if (!rect) {
+                return;
+            }
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const gridX = contextMenu.x - centerX + position.x;
+            const gridY = contextMenu.y - centerY + position.y;
+
+            addNode(f(gridX, gridY));
+        },
+        [addNode, contextMenu, position]
+    );
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
@@ -189,14 +208,19 @@ export const Grid: React.FC = () => {
                     y: dragStart.y - e.clientY
                 });
             } else if (draggingNode) {
-                moveNode(
-                    draggingNode.id,
-                    draggingNode.startX + e.clientX,
-                    draggingNode.startY + e.clientY
-                );
+                const node = nodes.get(draggingNode.id);
+
+                if (!node) {
+                    return;
+                }
+
+                node.x = draggingNode.startX + e.clientX;
+                node.y = draggingNode.startY + e.clientY;
+
+                updateNode(node);
             }
         },
-        [dragStart, draggingNode, moveNode]
+        [dragStart, draggingNode, nodes, updateNode]
     );
 
     const handleStartConnection = useCallback(
@@ -521,7 +545,7 @@ export const Grid: React.FC = () => {
                 <ContextMenu
                     x={contextMenu.x}
                     y={contextMenu.y}
-                    onAddNode={addNode}
+                    onAddNode={addNodeCallback}
                     onClose={() => setContextMenu(null)}
                 />
             )}

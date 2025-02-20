@@ -1,28 +1,67 @@
 import { useState } from "react";
+import { LLMNode } from "@/lib/nodes";
+import useStore from "@/store/useStore";
 
-export default function LLMPanel() {
-    const [inputValue, setInputValue] = useState("");
+interface LLMPanelProps {
+    node: LLMNode;
+}
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Handle the submission of the input value
-    };
+export default function LLMPanel({ node }: LLMPanelProps) {
+    const updateNode = useStore((state) => state.updateNode);
+    const [text, setText] = useState(node.prompt);
 
     return (
-        <form onSubmit={handleSubmit} className="flex gap-2">
-            <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="flex-1 rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200 focus:border-purple-500 focus:outline-none"
-                placeholder="Input prompt..."
-            />
-            <button
-                type="submit"
-                className="focus:ring-opacity-50 rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            >
-                Submit
-            </button>
-        </form>
+        <div className="flex flex-col gap-4 p-4">
+            {/*<div className="flex flex-col gap-2">
+                <label className="text-sm text-gray-300">Model</label>
+                <select
+                    value={node.data.model}
+                    onChange={(e) => handleChange('model', e.target.value)}
+                    className="rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
+                >
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="gpt-4">GPT-4</option>
+                </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <label className="text-sm text-gray-300">Temperature</label>
+                <input
+                    type="number"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    value={node.data.temperature}
+                    onChange={(e) => handleChange('temperature', parseFloat(e.target.value))}
+                    className="rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
+                />
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <label className="text-sm text-gray-300">Max Tokens</label>
+                <input
+                    type="number"
+                    min="1"
+                    max="4000"
+                    value={node.data.maxTokens}
+                    onChange={(e) => handleChange('maxTokens', parseInt(e.target.value))}
+                    className="rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
+                />
+            </div>*/}
+
+            <div className="flex flex-col gap-2">
+                <label className="text-sm text-gray-300">System Prompt</label>
+                <textarea
+                    value={text}
+                    onChange={(e) => {
+                        setText(e.target.value);
+                        node.prompt = e.target.value;
+                        updateNode(node);
+                    }}
+                    className="h-32 rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
+                    placeholder="Enter system prompt..."
+                />
+            </div>
+        </div>
     );
 }

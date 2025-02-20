@@ -1,28 +1,41 @@
-import { useState } from "react";
+import { ConsoleNode } from "@/lib/nodes";
+import useStore, { useConnectedNode } from "@/store/useStore";
 
-export default function ConsolePanel() {
-    const [inputValue, setInputValue] = useState("");
+interface ConsolePanelProps {
+    node: ConsoleNode;
+}
+
+export default function ConsolePanel({ node }: ConsolePanelProps) {
+    const updateNode = useStore((state) => state.updateNode);
+    const getConnectedNode = useConnectedNode();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle the submission of the input value
+        getConnectedNode(node.id)?.call(node.prompt);
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex gap-2">
-            <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="flex-1 rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200 focus:border-purple-500 focus:outline-none"
-                placeholder="Input command..."
-            />
-            <button
-                type="submit"
-                className="focus:ring-opacity-50 rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            >
-                Execute
-            </button>
-        </form>
+        <div className="flex flex-col gap-4 p-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <label className="text-sm text-gray-300">User Prompt</label>
+                    <textarea
+                        value={node.prompt}
+                        onChange={(e) => {
+                            node.prompt = e.target.value;
+                            updateNode(node);
+                        }}
+                        className="h-32 rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
+                        placeholder="Enter your prompt..."
+                    />
+                </div>
+                <button
+                    type="submit"
+                    className="focus:ring-opacity-50 rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                >
+                    Execute
+                </button>
+            </form>
+        </div>
     );
 }

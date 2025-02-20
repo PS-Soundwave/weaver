@@ -18,7 +18,7 @@ interface Store {
     addWire: (_wire: Wire) => void;
     removeWire: (_id: string) => void;
     setSelectedNode: (_node: Node | null) => void;
-    moveNode: (_id: string, _x: number, _y: number) => void;
+    updateNode: (_node: Node) => void;
 }
 
 const useStore = create<Store>((set) => ({
@@ -74,21 +74,27 @@ const useStore = create<Store>((set) => ({
             selectedNode: node
         }),
 
-    moveNode: (id: string, x: number, y: number) =>
+    updateNode: (node: Node) => {
         set((state) => {
-            const node = state.nodes.get(id);
-
-            if (!node) {
-                return state;
-            }
-
-            node.x = x;
-            node.y = y;
-
             const newNodes = new Map(state.nodes);
-
+            newNodes.set(node.id, node);
             return { nodes: newNodes };
-        })
+        });
+    }
 }));
 
 export default useStore;
+
+export const useConnectedNode = () => {
+    const nodes = useStore((state) => state.nodes);
+    const wires = useStore((state) => state.wires);
+
+    return (id: string) => {
+        const wire = wires.values().find((w) => w.fromNode === id);
+        if (!wire) {
+            return null;
+        }
+
+        return nodes.get(wire.toNode);
+    };
+};

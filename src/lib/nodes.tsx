@@ -24,6 +24,7 @@ export interface Node {
         _screenY: number
     ) => ConnectorPosition[];
     getPanelContent: () => React.ReactElement;
+    call: (_prompt: string) => void;
 }
 
 export class LLMNode implements Node {
@@ -34,6 +35,8 @@ export class LLMNode implements Node {
     x: number;
     y: number;
     type = "llm";
+
+    prompt = "";
 
     constructor(id: string, x: number, y: number) {
         this.id = id;
@@ -67,7 +70,11 @@ export class LLMNode implements Node {
     }
 
     getPanelContent(): React.ReactElement {
-        return <LLMPanel />;
+        return <LLMPanel node={this} />;
+    }
+
+    call(prompt: string) {
+        console.log(`Calling LLM with prompt: ${this.prompt}\n${prompt}`);
     }
 }
 
@@ -78,6 +85,8 @@ export class ConsoleNode implements Node {
     x: number;
     y: number;
     type = "console";
+
+    prompt = "";
 
     constructor(id: string, x: number, y: number) {
         this.id = id;
@@ -103,6 +112,10 @@ export class ConsoleNode implements Node {
     }
 
     getPanelContent(): React.ReactElement {
-        return <ConsolePanel />;
+        return <ConsolePanel node={this} />;
+    }
+
+    call() {
+        throw new Error("Console nodes do not support calling");
     }
 }
