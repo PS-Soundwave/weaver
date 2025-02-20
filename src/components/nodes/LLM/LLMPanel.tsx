@@ -58,6 +58,19 @@ export default function LLMPanel({ node }: LLMPanelProps) {
                 </div>
             )}
 
+            <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-300">Structured Output</label>
+                <input
+                    type="checkbox"
+                    checked={node.structuredOutput}
+                    onChange={(e) => {
+                        node.structuredOutput = e.target.checked;
+                        updateNode(node);
+                    }}
+                    className="h-4 w-4 rounded border-gray-700 bg-gray-800 text-purple-600 focus:ring-purple-600"
+                />
+            </div>
+
             <div className="flex flex-col gap-2">
                 <label className="text-sm text-gray-300">System Prompt</label>
                 <textarea

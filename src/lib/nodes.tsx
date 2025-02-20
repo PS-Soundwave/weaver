@@ -41,6 +41,7 @@ export class LLMNode implements Node {
     prompt = "";
     loading = false;
     error: string | null = null;
+    structuredOutput = false;
 
     constructor(id: string, x: number, y: number) {
         this.id = id;
@@ -93,7 +94,10 @@ export class LLMNode implements Node {
                 messages: [
                     { role: "system", content: this.prompt },
                     { role: "user", content: prompt }
-                ]
+                ],
+                response_format: this.structuredOutput
+                    ? { type: "json_object" }
+                    : { type: "text" }
             });
 
             const result = completion.choices[0]?.message?.content;
