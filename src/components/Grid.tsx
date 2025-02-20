@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import useStore from "@/store/useStore";
 import { ConsoleNode, LLMNode, Node } from "../lib/nodes";
+import { EndNode } from "../lib/nodes/EndNode";
 import { ConsoleNode as ConsoleNodeComponent } from "./nodes/ConsoleNode";
+import { EndNode as EndNodeComponent } from "./nodes/EndNode";
 import { LLMNode as LLMNodeComponent } from "./nodes/LLMNode";
 
 interface Wire {
@@ -102,6 +104,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 }
             >
                 Add LLM
+            </button>
+            <button
+                onMouseDown={(e) => {
+                    e.stopPropagation();
+                    onAddNode((x, y) => new EndNode(crypto.randomUUID(), x, y));
+                    onClose();
+                }}
+                style={buttonStyle}
+                onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "rgb(55, 65, 81)")
+                }
+                onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                }
+            >
+                Add End
             </button>
         </div>
     );
@@ -487,33 +505,48 @@ export const Grid: React.FC = () => {
                     }
                 };
 
-                if (node.type === "llm") {
-                    return (
-                        <LLMNodeComponent
-                            key={node.id}
-                            id={node.id}
-                            screenX={screenX}
-                            screenY={screenY}
-                            selected={selectedNode?.id === node.id}
-                            onMouseDown={handleNodeMouseDown}
-                            onStartConnection={handleStartConnection}
-                            onEndConnection={handleEndConnection}
-                        />
-                    );
+                switch (node.type) {
+                    case "console":
+                        return (
+                            <ConsoleNodeComponent
+                                key={node.id}
+                                id={node.id}
+                                screenX={screenX}
+                                screenY={screenY}
+                                selected={selectedNode?.id === node.id}
+                                onMouseDown={handleNodeMouseDown}
+                                onStartConnection={handleStartConnection}
+                                onEndConnection={handleEndConnection}
+                            />
+                        );
+                    case "llm":
+                        return (
+                            <LLMNodeComponent
+                                key={node.id}
+                                id={node.id}
+                                screenX={screenX}
+                                screenY={screenY}
+                                selected={selectedNode?.id === node.id}
+                                onMouseDown={handleNodeMouseDown}
+                                onStartConnection={handleStartConnection}
+                                onEndConnection={handleEndConnection}
+                            />
+                        );
+                    case "end":
+                    default:
+                        return (
+                            <EndNodeComponent
+                                key={node.id}
+                                id={node.id}
+                                screenX={screenX}
+                                screenY={screenY}
+                                selected={selectedNode?.id === node.id}
+                                onMouseDown={handleNodeMouseDown}
+                                onStartConnection={handleStartConnection}
+                                onEndConnection={handleEndConnection}
+                            />
+                        );
                 }
-
-                return (
-                    <ConsoleNodeComponent
-                        key={node.id}
-                        id={node.id}
-                        screenX={screenX}
-                        screenY={screenY}
-                        selected={selectedNode?.id === node.id}
-                        onMouseDown={handleNodeMouseDown}
-                        onStartConnection={handleStartConnection}
-                        onEndConnection={handleEndConnection}
-                    />
-                );
             })
         );
     }, [

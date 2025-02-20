@@ -1,5 +1,6 @@
 import ConsolePanel from "@/components/nodes/Console/ConsolePanel";
 import LLMPanel from "@/components/nodes/LLM/LLMPanel";
+import { getConnectedNode, Store } from "@/store/useStore";
 
 export interface Connector {
     id: string;
@@ -24,7 +25,7 @@ export interface Node {
         _screenY: number
     ) => ConnectorPosition[];
     getPanelContent: () => React.ReactElement;
-    call: (_prompt: string) => void;
+    call: (_state: Store, _prompt: string) => void;
 }
 
 export class LLMNode implements Node {
@@ -73,8 +74,12 @@ export class LLMNode implements Node {
         return <LLMPanel node={this} />;
     }
 
-    call(prompt: string) {
+    call(state: Store, prompt: string) {
         console.log(`Calling LLM with prompt: ${this.prompt}\n${prompt}`);
+        getConnectedNode(state, this.id)?.call(
+            state,
+            `${this.prompt}\n${prompt}`
+        );
     }
 }
 

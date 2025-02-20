@@ -9,7 +9,7 @@ interface Wire {
     toConnector: string;
 }
 
-interface Store {
+export interface Store {
     nodes: Map<string, Node>;
     wires: Map<string, Wire>;
     selectedNode: Node | null;
@@ -85,16 +85,11 @@ const useStore = create<Store>((set) => ({
 
 export default useStore;
 
-export const useConnectedNode = () => {
-    const nodes = useStore((state) => state.nodes);
-    const wires = useStore((state) => state.wires);
+export const getConnectedNode = (state: Store, id: string) => {
+    const wire = state.wires.values().find((w) => w.fromNode === id);
+    if (!wire) {
+        return null;
+    }
 
-    return (id: string) => {
-        const wire = wires.values().find((w) => w.fromNode === id);
-        if (!wire) {
-            return null;
-        }
-
-        return nodes.get(wire.toNode);
-    };
+    return state.nodes.get(wire.toNode);
 };
