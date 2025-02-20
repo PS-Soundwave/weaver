@@ -1,3 +1,4 @@
+import OpenAI from "openai";
 import ConsolePanel from "@/components/nodes/Console/ConsolePanel";
 import LLMPanel from "@/components/nodes/LLM/LLMPanel";
 import { getConnectedNode, Store } from "@/store/useStore";
@@ -38,6 +39,8 @@ export class LLMNode implements Node {
     type = "llm";
 
     prompt = "";
+    loading = false;
+    error: string | null = null;
 
     constructor(id: string, x: number, y: number) {
         this.id = id;
@@ -74,12 +77,42 @@ export class LLMNode implements Node {
         return <LLMPanel node={this} />;
     }
 
-    call(state: Store, prompt: string) {
-        console.log(`Calling LLM with prompt: ${this.prompt}\n${prompt}`);
-        getConnectedNode(state, this.id)?.call(
-            state,
-            `${this.prompt}\n${prompt}`
-        );
+    async call(state: Store, prompt: string) {
+        this.loading = true;
+        this.error = null;
+        state.updateNode(this);
+
+        try {
+            const openai = new OpenAI({
+                apiKey: state.openAIKey,
+                dangerouslyAllowBrowser: true
+            });
+
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o-mini-2024-07-18",
+                messages: [
+                    { role: "system", content: this.prompt },
+                    { role: "user", content: prompt }
+                ]
+            });
+
+            const result = completion.choices[0]?.message?.content;
+
+            if (!result) {
+                throw new Error("No response content received");
+            }
+
+            getConnectedNode(state, this.id)?.call(state, result);
+        } catch (err) {
+            console.error("Error calling OpenAI:", err);
+            this.error =
+                err instanceof Error
+                    ? err.message
+                    : "An unknown error occurred";
+        } finally {
+            this.loading = false;
+            state.updateNode(this);
+        }
     }
 }
 

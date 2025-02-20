@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import useStore from "@/store/useStore";
 import { ConsoleNode, LLMNode, Node } from "../lib/nodes";
 import { EndNode } from "../lib/nodes/EndNode";
 import { ConsoleNode as ConsoleNodeComponent } from "./nodes/ConsoleNode";
 import { EndNode as EndNodeComponent } from "./nodes/EndNode";
 import { LLMNode as LLMNodeComponent } from "./nodes/LLMNode";
+import { SettingsMenu } from "./SettingsMenu";
 
 interface Wire {
     id: string;
@@ -30,7 +31,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleClickOutside = (e) => {
+        const handleClickOutside = (e: globalThis.MouseEvent) => {
             if (
                 menuRef.current &&
                 !menuRef.current.contains(e.target as Element)
@@ -184,11 +185,16 @@ export const Grid: React.FC = () => {
         startY: number;
     } | null>(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const containerRef = useRef(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const addNodeCallback = useCallback(
-        (f) => {
+        (f: (_x: number, _y: number) => Node) => {
+            if (!contextMenu) {
+                return;
+            }
+
             const rect = containerRef.current?.getBoundingClientRect();
+
             if (!rect) {
                 return;
             }
@@ -217,7 +223,7 @@ export const Grid: React.FC = () => {
     );
 
     const handleMouseMove = useCallback(
-        (e: MouseEvent) => {
+        (e: MouseEvent<HTMLDivElement>) => {
             setMousePosition({ x: e.clientX, y: e.clientY });
 
             if (dragStart !== null) {
@@ -333,16 +339,6 @@ export const Grid: React.FC = () => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY });
     }, []);
-
-    useEffect(() => {
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
-
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        };
-    }, [handleMouseMove, handleMouseUp]);
 
     const getGridLines = () => {
         if (!containerRef.current) {
@@ -567,8 +563,11 @@ export const Grid: React.FC = () => {
                 cursor: dragStart !== null ? "grabbing" : "default"
             }}
             onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
             onContextMenu={handleContextMenu}
         >
+            <SettingsMenu />
             <svg className="h-full w-full">
                 {getGridLines()}
                 {renderWires()}

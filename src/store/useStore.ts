@@ -13,18 +13,21 @@ export interface Store {
     nodes: Map<string, Node>;
     wires: Map<string, Wire>;
     selectedNode: Node | null;
+    openAIKey: string;
     addNode: (_node: Node) => void;
     removeNode: (_id: string) => void;
     addWire: (_wire: Wire) => void;
     removeWire: (_id: string) => void;
     setSelectedNode: (_node: Node | null) => void;
     updateNode: (_node: Node) => void;
+    setOpenAIKey: (_key: string) => void;
 }
 
 const useStore = create<Store>((set) => ({
     nodes: new Map(),
     wires: new Map(),
     selectedNode: null,
+    openAIKey: '',
 
     addNode: (node: Node) =>
         set((state) => {
@@ -80,7 +83,12 @@ const useStore = create<Store>((set) => ({
             newNodes.set(node.id, node);
             return { nodes: newNodes };
         });
-    }
+    },
+
+    setOpenAIKey: (key: string) => 
+        set({
+            openAIKey: key
+        })
 }));
 
 export default useStore;

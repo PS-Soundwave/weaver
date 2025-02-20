@@ -23,7 +23,7 @@ export default function LLMPanel({ node }: LLMPanelProps) {
                     <option value="gpt-4">GPT-4</option>
                 </select>
             </div>
-
+            
             <div className="flex flex-col gap-2">
                 <label className="text-sm text-gray-300">Temperature</label>
                 <input
@@ -37,7 +37,7 @@ export default function LLMPanel({ node }: LLMPanelProps) {
                 />
             </div>
 
-            <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                 <label className="text-sm text-gray-300">Max Tokens</label>
                 <input
                     type="number"
@@ -48,6 +48,15 @@ export default function LLMPanel({ node }: LLMPanelProps) {
                     className="rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
                 />
             </div>*/}
+            {node.loading && (
+                <div className="text-sm text-purple-400">Processing...</div>
+            )}
+
+            {node.error && (
+                <div className="rounded bg-red-950 p-2 text-sm text-red-400">
+                    {node.error}
+                </div>
+            )}
 
             <div className="flex flex-col gap-2">
                 <label className="text-sm text-gray-300">System Prompt</label>

@@ -4,9 +4,13 @@ import * as Separator from "@radix-ui/react-separator";
 import useStore from "@/store/useStore";
 
 export const BottomPanel: React.FC = () => {
-    const selectedNode = useStore((state) =>
-        state.nodes.get(state.selectedNode?.id)
-    );
+    const selectedNode = useStore((state) => {
+        if (state.selectedNode === null) {
+            return null;
+        }
+
+        return state.nodes.get(state.selectedNode.id);
+    });
 
     return (
         <div className="h-64 max-h-64 overflow-y-scroll border-t border-gray-800 bg-gray-900">
