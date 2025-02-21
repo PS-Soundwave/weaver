@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ConsoleNode } from "@/lib/nodes";
 import useStore, { getConnectedNode } from "@/store/useStore";
 
@@ -7,8 +6,8 @@ interface ConsolePanelProps {
 }
 
 export default function ConsolePanel({ node }: ConsolePanelProps) {
+    const updateNode = useStore((state) => state.updateNode);
     const state = useStore.getState();
-    const [text, setText] = useState(node.prompt);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,11 +20,10 @@ export default function ConsolePanel({ node }: ConsolePanelProps) {
                 <div className="flex flex-col gap-2">
                     <label className="text-sm text-gray-300">User Prompt</label>
                     <textarea
-                        value={text}
+                        value={node.prompt}
                         onChange={(e) => {
-                            setText(e.target.value);
                             node.prompt = e.target.value;
-                            state.updateNode(node);
+                            updateNode(node);
                         }}
                         className="h-32 rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
                         placeholder="Enter your prompt..."

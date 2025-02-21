@@ -27,7 +27,7 @@ const useStore = create<Store>((set) => ({
     nodes: new Map(),
     wires: new Map(),
     selectedNode: null,
-    openAIKey: '',
+    openAIKey: "",
 
     addNode: (node: Node) =>
         set((state) => {
@@ -80,12 +80,12 @@ const useStore = create<Store>((set) => ({
     updateNode: (node: Node) => {
         set((state) => {
             const newNodes = new Map(state.nodes);
-            newNodes.set(node.id, node);
+            newNodes.set(node.id, node.copy());
             return { nodes: newNodes };
         });
     },
 
-    setOpenAIKey: (key: string) => 
+    setOpenAIKey: (key: string) =>
         set({
             openAIKey: key
         })
@@ -95,6 +95,17 @@ export default useStore;
 
 export const getConnectedNode = (state: Store, id: string) => {
     const wire = state.wires.values().find((w) => w.fromNode === id);
+    if (!wire) {
+        return null;
+    }
+
+    return state.nodes.get(wire.toNode);
+};
+
+export const getNodeThroughConnector = (state: Store, connectorId: string) => {
+    const wire = state.wires
+        .values()
+        .find((w) => w.fromConnector === connectorId);
     if (!wire) {
         return null;
     }

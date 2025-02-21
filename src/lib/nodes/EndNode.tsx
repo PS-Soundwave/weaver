@@ -43,4 +43,10 @@ export class EndNode implements Node {
         this.lastValue = value;
         _state.updateNode(this);
     }
+
+    copy(): Node {
+        const newNode = new EndNode(this.id, this.x, this.y);
+        newNode.lastValue = this.lastValue;
+        return newNode;
+    }
 }

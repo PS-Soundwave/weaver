@@ -27,6 +27,7 @@ export interface Node {
     ) => ConnectorPosition[];
     getPanelContent: () => React.ReactElement;
     call: (_state: Store, _prompt: string) => void;
+    copy: () => Node;
 }
 
 export class LLMNode implements Node {
@@ -118,6 +119,17 @@ export class LLMNode implements Node {
             state.updateNode(this);
         }
     }
+
+    copy(): Node {
+        const newNode = new LLMNode(this.id, this.x, this.y);
+
+        newNode.prompt = this.prompt;
+        newNode.loading = this.loading;
+        newNode.error = this.error;
+        newNode.structuredOutput = this.structuredOutput;
+
+        return newNode;
+    }
 }
 
 export class ConsoleNode implements Node {
@@ -159,5 +171,11 @@ export class ConsoleNode implements Node {
 
     call() {
         throw new Error("Console nodes do not support calling");
+    }
+
+    copy(): Node {
+        const newNode = new ConsoleNode(this.id, this.x, this.y);
+        newNode.prompt = this.prompt;
+        return newNode;
     }
 }

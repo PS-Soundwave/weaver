@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { LLMNode } from "@/lib/nodes";
 import useStore from "@/store/useStore";
 
@@ -8,7 +7,6 @@ interface LLMPanelProps {
 
 export default function LLMPanel({ node }: LLMPanelProps) {
     const updateNode = useStore((state) => state.updateNode);
-    const [text, setText] = useState(node.prompt);
 
     return (
         <div className="flex flex-col gap-4 p-4">
@@ -59,7 +57,9 @@ export default function LLMPanel({ node }: LLMPanelProps) {
             )}
 
             <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-300">Structured Output</label>
+                <label className="text-sm text-gray-300">
+                    Structured Output
+                </label>
                 <input
                     type="checkbox"
                     checked={node.structuredOutput}
@@ -74,9 +74,8 @@ export default function LLMPanel({ node }: LLMPanelProps) {
             <div className="flex flex-col gap-2">
                 <label className="text-sm text-gray-300">System Prompt</label>
                 <textarea
-                    value={text}
+                    value={node.prompt}
                     onChange={(e) => {
-                        setText(e.target.value);
                         node.prompt = e.target.value;
                         updateNode(node);
                     }}
