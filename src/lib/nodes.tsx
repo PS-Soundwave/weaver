@@ -93,7 +93,28 @@ export type NewNode =
     | VectorDBStoreNode
     | VectorDBRetrieveNode;
 
+const getDelayForSpeed = (
+    speed: "realtime" | "fast" | "medium" | "slow"
+): number => {
+    switch (speed) {
+        case "fast":
+            return 500;
+        case "medium":
+            return 1000;
+        case "slow":
+            return 2000;
+        default:
+            return 0;
+    }
+};
+
 export const call = async (node: NewNode, state: Store, prompt: string) => {
+    // Add delay based on execution speed setting
+    const delay = getDelayForSpeed(state.executionSpeed);
+    if (delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+
     switch (node.type) {
         case "llm":
             node.state.loading = true;

@@ -14,6 +14,7 @@ export interface Store {
     wires: Map<string, Wire>;
     selectedNode: NewNode | null;
     openAIKey: string;
+    executionSpeed: "realtime" | "fast" | "medium" | "slow";
     addNode: (_node: NewNode) => void;
     removeNode: (_id: string) => void;
     addWire: (_wire: Wire) => void;
@@ -21,6 +22,9 @@ export interface Store {
     setSelectedNode: (_node: NewNode | null) => void;
     updateNode: (_node: NewNode) => void;
     setOpenAIKey: (_key: string) => void;
+    setExecutionSpeed: (
+        _speed: "realtime" | "fast" | "medium" | "slow"
+    ) => void;
 }
 
 const useStore = create<Store>((set) => ({
@@ -28,6 +32,7 @@ const useStore = create<Store>((set) => ({
     wires: new Map(),
     selectedNode: null,
     openAIKey: "",
+    executionSpeed: "medium",
 
     addNode: (node: NewNode) =>
         set((state) => {
@@ -88,6 +93,11 @@ const useStore = create<Store>((set) => ({
     setOpenAIKey: (key: string) =>
         set({
             openAIKey: key
+        }),
+
+    setExecutionSpeed: (speed: "realtime" | "fast" | "medium" | "slow") =>
+        set({
+            executionSpeed: speed
         })
 }));
 

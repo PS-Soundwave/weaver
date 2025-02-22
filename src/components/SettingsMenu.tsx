@@ -2,12 +2,14 @@ import { useState } from "react";
 import useStore from "../store/useStore";
 
 export const SettingsMenu: React.FC = () => {
-    const { openAIKey, setOpenAIKey } = useStore();
+    const { openAIKey, setOpenAIKey, executionSpeed, setExecutionSpeed } = useStore();
     const [isOpen, setIsOpen] = useState(false);
     const [key, setKey] = useState(openAIKey);
+    const [speed, setSpeed] = useState(executionSpeed);
 
     const handleSubmit = () => {
         setOpenAIKey(key);
+        setExecutionSpeed(speed);
         setIsOpen(false);
     };
 
@@ -37,6 +39,21 @@ export const SettingsMenu: React.FC = () => {
                                 className="w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                                 placeholder="sk-..."
                             />
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-sm font-medium text-gray-300">
+                                Execution Speed
+                            </label>
+                            <select
+                                value={speed}
+                                onChange={(e) => setSpeed(e.target.value as "realtime" | "fast" | "medium" | "slow")}
+                                className="w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                            >
+                                <option value="realtime">Real Time (No Delay)</option>
+                                <option value="fast">Fast (0.5s)</option>
+                                <option value="medium">Medium (1s)</option>
+                                <option value="slow">Slow (2s)</option>
+                            </select>
                         </div>
                         <div className="flex justify-end space-x-2">
                             <button
