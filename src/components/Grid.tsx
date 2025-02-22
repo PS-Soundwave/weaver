@@ -3,10 +3,14 @@ import useStore from "@/store/useStore";
 import { ConsoleNode, LLMNode, Node } from "../lib/nodes";
 import { CaseNode } from "../lib/nodes/CaseNode";
 import { EndNode } from "../lib/nodes/EndNode";
+import { VectorDBRetrieveNode } from "../lib/nodes/VectorDBRetrieveNode";
+import { VectorDBStoreNode } from "../lib/nodes/VectorDBStoreNode";
 import { CaseNode as CaseNodeComponent } from "./nodes/CaseNode";
 import { ConsoleNode as ConsoleNodeComponent } from "./nodes/ConsoleNode";
 import { EndNode as EndNodeComponent } from "./nodes/EndNode";
 import { LLMNode as LLMNodeComponent } from "./nodes/LLMNode";
+import { VectorDBRetrieveNode as VectorDBRetrieveNodeComponent } from "./nodes/VectorDBRetrieveNode";
+import { VectorDBStoreNode as VectorDBStoreNodeComponent } from "./nodes/VectorDBStoreNode";
 import { SettingsMenu } from "./SettingsMenu";
 
 interface Wire {
@@ -141,6 +145,44 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 }
             >
                 Add Case
+            </button>
+            <button
+                onMouseDown={(e) => {
+                    e.stopPropagation();
+                    onAddNode(
+                        (x, y) =>
+                            new VectorDBStoreNode(crypto.randomUUID(), x, y)
+                    );
+                    onClose();
+                }}
+                style={buttonStyle}
+                onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "rgb(55, 65, 81)")
+                }
+                onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                }
+            >
+                Vector DB Store
+            </button>
+            <button
+                onMouseDown={(e) => {
+                    e.stopPropagation();
+                    onAddNode(
+                        (x, y) =>
+                            new VectorDBRetrieveNode(crypto.randomUUID(), x, y)
+                    );
+                    onClose();
+                }}
+                style={buttonStyle}
+                onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "rgb(55, 65, 81)")
+                }
+                onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                }
+            >
+                Vector DB Retrieve
             </button>
         </div>
     );
@@ -569,6 +611,32 @@ export const Grid: React.FC = () => {
                                 screenX={screenX}
                                 screenY={screenY}
                                 node={node as CaseNode}
+                                selected={selectedNode?.id === node.id}
+                                onMouseDown={handleNodeMouseDown}
+                                onStartConnection={handleStartConnection}
+                                onEndConnection={handleEndConnection}
+                            />
+                        );
+                    case "vectordb-store":
+                        return (
+                            <VectorDBStoreNodeComponent
+                                key={node.id}
+                                id={node.id}
+                                screenX={screenX}
+                                screenY={screenY}
+                                selected={selectedNode?.id === node.id}
+                                onMouseDown={handleNodeMouseDown}
+                                onStartConnection={handleStartConnection}
+                                onEndConnection={handleEndConnection}
+                            />
+                        );
+                    case "vectordb-retrieve":
+                        return (
+                            <VectorDBRetrieveNodeComponent
+                                key={node.id}
+                                id={node.id}
+                                screenX={screenX}
+                                screenY={screenY}
                                 selected={selectedNode?.id === node.id}
                                 onMouseDown={handleNodeMouseDown}
                                 onStartConnection={handleStartConnection}
