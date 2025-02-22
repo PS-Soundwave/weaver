@@ -46,13 +46,13 @@ export default function LLMPanel({ node }: LLMPanelProps) {
                     className="rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"
                 />
             </div>*/}
-            {node.loading && (
+            {node.state.loading && (
                 <div className="text-sm text-purple-400">Processing...</div>
             )}
 
-            {node.error && (
+            {node.state.error && (
                 <div className="rounded bg-red-950 p-2 text-sm text-red-400">
-                    {node.error}
+                    {node.state.error}
                 </div>
             )}
 
@@ -62,9 +62,9 @@ export default function LLMPanel({ node }: LLMPanelProps) {
                 </label>
                 <input
                     type="checkbox"
-                    checked={node.structuredOutput}
+                    checked={node.state.structuredOutput}
                     onChange={(e) => {
-                        node.structuredOutput = e.target.checked;
+                        node.state.structuredOutput = e.target.checked;
                         updateNode(node);
                     }}
                     className="h-4 w-4 rounded border-gray-700 bg-gray-800 text-purple-600 focus:ring-purple-600"
@@ -74,9 +74,9 @@ export default function LLMPanel({ node }: LLMPanelProps) {
             <div className="flex flex-col gap-2">
                 <label className="text-sm text-gray-300">System Prompt</label>
                 <textarea
-                    value={node.prompt}
+                    value={node.state.prompt}
                     onChange={(e) => {
-                        node.prompt = e.target.value;
+                        node.state.prompt = e.target.value;
                         updateNode(node);
                     }}
                     className="h-32 rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"

@@ -1,6 +1,7 @@
 "use client";
 
 import * as Separator from "@radix-ui/react-separator";
+import { getPanelContent } from "@/lib/nodes";
 import useStore from "@/store/useStore";
 
 export const BottomPanel: React.FC = () => {
@@ -19,7 +20,7 @@ export const BottomPanel: React.FC = () => {
                 <h2 className="mb-4 text-lg font-medium text-gray-200">
                     {selectedNode?.type ?? "No node selected"}
                 </h2>
-                {selectedNode && selectedNode?.getPanelContent()}
+                {selectedNode && getPanelContent(selectedNode)}
             </div>
         </div>
     );

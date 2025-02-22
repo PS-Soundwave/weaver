@@ -59,7 +59,7 @@ const config = [
             ],
             "no-useless-assignment": "error",
             "no-useless-backreference": "error",
-            "require-atomic-updates": "error",
+            "require-atomic-updates": ["error", { allowProperties: true }],
             "use-isnan": "error",
             "valid-typeof": "error",
 

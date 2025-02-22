@@ -1,4 +1,8 @@
-import { VectorDBRetrieveNode as VectorDBRetrieveNodeClass } from "../../lib/nodes/VectorDBRetrieveNode";
+import {
+    Connector as ConnectorModel,
+    getConnectorPositions,
+    VectorDBRetrieveNode as VectorDBRetrieveNodeModel
+} from "../../lib/nodes";
 import { BaseNode } from "./BaseNode";
 
 interface VectorDBRetrieveNodeProps {
@@ -17,7 +21,11 @@ interface VectorDBRetrieveNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    node: VectorDBRetrieveNodeModel;
 }
+
+const WIDTH = 150;
+const HEIGHT = 80;
 
 export const VectorDBRetrieveNode = ({
     id,
@@ -26,21 +34,22 @@ export const VectorDBRetrieveNode = ({
     selected,
     onMouseDown,
     onStartConnection,
-    onEndConnection
+    onEndConnection,
+    node
 }: VectorDBRetrieveNodeProps) => {
-    const nodeInstance = new VectorDBRetrieveNodeClass(id, 0, 0);
-    const connectorPositions = nodeInstance.getConnectorPositions(
-        screenX,
-        screenY
-    );
+    const connectors: ConnectorModel[] = [
+        { id: `${id}-input`, type: "input" },
+        { id: `${id}-output`, type: "output" }
+    ];
+    const connectorPositions = getConnectorPositions(node, screenX, screenY);
 
     return (
         <BaseNode onMouseDown={onMouseDown} id={id}>
             <foreignObject
                 x={screenX}
                 y={screenY}
-                width={VectorDBRetrieveNodeClass.WIDTH}
-                height={VectorDBRetrieveNodeClass.HEIGHT}
+                width={WIDTH}
+                height={HEIGHT}
             >
                 <div
                     className={`h-full w-full rounded border-2 bg-gray-800 p-2 ${
@@ -52,7 +61,7 @@ export const VectorDBRetrieveNode = ({
                     </div>
                 </div>
             </foreignObject>
-            {nodeInstance.getConnectors().map((connector) => {
+            {connectors.map((connector) => {
                 const position = connectorPositions.find(
                     (pos) => pos.id === connector.id
                 );

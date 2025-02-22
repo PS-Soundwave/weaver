@@ -1,5 +1,9 @@
 import React from "react";
-import { CaseNode as CaseNodeModel } from "../../lib/nodes/CaseNode";
+import {
+    CaseNode as CaseNodeModel,
+    Connector as ConnectorModel,
+    getConnectorPositions
+} from "../../lib/nodes";
 import { BaseNode, Connector, getNodeColors } from "./BaseNode";
 
 interface CaseNodeProps {
@@ -21,6 +25,22 @@ interface CaseNodeProps {
     ) => void;
 }
 
+export const getConnectors = (node: CaseNodeModel): ConnectorModel[] => {
+    const connectors: ConnectorModel[] = [
+        { id: `${node.id}-input`, type: "input" }
+    ];
+
+    // Add an output connector for each case
+    node.state.cases.forEach((caseValue) => {
+        connectors.push({
+            id: `${node.id}-output-${caseValue}`,
+            type: "output"
+        });
+    });
+
+    return connectors;
+};
+
 export const CaseNode: React.FC<CaseNodeProps> = ({
     id,
     screenX,
@@ -31,17 +51,19 @@ export const CaseNode: React.FC<CaseNodeProps> = ({
     onStartConnection,
     onEndConnection
 }) => {
+    const WIDTH = 80;
+    const HEIGHT = 150;
     const colors = getNodeColors(selected);
-    const connectors = node.getConnectors();
-    const connectorPositions = node.getConnectorPositions(screenX, screenY);
+    const connectors = getConnectors(node);
+    const connectorPositions = getConnectorPositions(node, screenX, screenY);
 
     return (
         <BaseNode id={id} onMouseDown={onMouseDown}>
             <rect
-                x={screenX - CaseNodeModel.WIDTH / 2}
-                y={screenY - CaseNodeModel.HEIGHT / 2}
-                width={CaseNodeModel.WIDTH}
-                height={CaseNodeModel.HEIGHT}
+                x={screenX - WIDTH / 2}
+                y={screenY - HEIGHT / 2}
+                width={WIDTH}
+                height={HEIGHT}
                 fill={colors.fill}
                 stroke={colors.stroke}
                 strokeWidth={2}

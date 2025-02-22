@@ -1,5 +1,9 @@
 import React from "react";
-import { EndNode as EndNodeClass } from "../../lib/nodes/EndNode";
+import {
+    Connector as ConnectorModel,
+    EndNode as EndNodeModel,
+    getConnectorPositions
+} from "../../lib/nodes";
 import { BaseNode, Connector, getNodeColors } from "./BaseNode";
 
 interface EndNodeProps {
@@ -18,7 +22,11 @@ interface EndNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    node: EndNodeModel;
 }
+
+const WIDTH = 120;
+const HEIGHT = 50;
 
 export const EndNode: React.FC<EndNodeProps> = ({
     id,
@@ -27,23 +35,20 @@ export const EndNode: React.FC<EndNodeProps> = ({
     selected,
     onMouseDown,
     onStartConnection,
-    onEndConnection
+    onEndConnection,
+    node
 }) => {
     const colors = getNodeColors(selected);
-    const nodeInstance = new EndNodeClass(id, 0, 0);
-    const connectors = nodeInstance.getConnectors();
-    const connectorPositions = nodeInstance.getConnectorPositions(
-        screenX,
-        screenY
-    );
+    const connectors: ConnectorModel[] = [{ id: `${id}-input`, type: "input" }];
+    const connectorPositions = getConnectorPositions(node, screenX, screenY);
 
     return (
         <BaseNode id={id} onMouseDown={onMouseDown}>
             <rect
-                x={screenX - EndNodeClass.WIDTH / 2}
-                y={screenY - EndNodeClass.HEIGHT / 2}
-                width={EndNodeClass.WIDTH}
-                height={EndNodeClass.HEIGHT}
+                x={screenX - WIDTH / 2}
+                y={screenY - HEIGHT / 2}
+                width={WIDTH}
+                height={HEIGHT}
                 fill={colors.fill}
                 stroke={colors.stroke}
                 strokeWidth={2}

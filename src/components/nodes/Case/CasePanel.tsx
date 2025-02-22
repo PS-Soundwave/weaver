@@ -1,6 +1,6 @@
 import React, { useState } from "react";
+import { CaseNode } from "@/lib/nodes";
 import useStore from "@/store/useStore";
-import { CaseNode } from "../../../lib/nodes/CaseNode";
 
 interface CasePanelProps {
     node: CaseNode;
@@ -11,15 +11,15 @@ export const CasePanel: React.FC<CasePanelProps> = ({ node }) => {
     const updateNode = useStore((state) => state.updateNode);
 
     const addCase = () => {
-        if (newCase && !node.cases.includes(newCase)) {
-            node.cases = [...node.cases, newCase];
+        if (newCase && !node.state.cases.includes(newCase)) {
+            node.state.cases = [...node.state.cases, newCase];
             setNewCase("");
             updateNode(node);
         }
     };
 
     const removeCase = (caseValue: string) => {
-        node.cases = node.cases.filter((c) => c !== caseValue);
+        node.state.cases = node.state.cases.filter((c) => c !== caseValue);
         updateNode(node);
     };
 
@@ -29,9 +29,9 @@ export const CasePanel: React.FC<CasePanelProps> = ({ node }) => {
                 <label className="block text-sm font-medium">Case Key</label>
                 <input
                     type="text"
-                    value={node.caseKey}
+                    value={node.state.caseKey}
                     onChange={(e) => {
-                        node.caseKey = e.target.value;
+                        node.state.caseKey = e.target.value;
                         updateNode(node);
                     }}
                     className="w-full rounded-md border px-3 py-2"
@@ -43,9 +43,9 @@ export const CasePanel: React.FC<CasePanelProps> = ({ node }) => {
                 <label className="block text-sm font-medium">Value Key</label>
                 <input
                     type="text"
-                    value={node.valueKey}
+                    value={node.state.valueKey}
                     onChange={(e) => {
-                        node.valueKey = e.target.value;
+                        node.state.valueKey = e.target.value;
                         updateNode(node);
                     }}
                     className="w-full rounded-md border px-3 py-2"
@@ -71,7 +71,7 @@ export const CasePanel: React.FC<CasePanelProps> = ({ node }) => {
                     </button>
                 </div>
                 <div className="space-y-2">
-                    {node.cases.map((caseValue) => (
+                    {node.state.cases.map((caseValue) => (
                         <div
                             key={caseValue}
                             className="flex items-center justify-between rounded bg-gray-800 p-2"

@@ -1,4 +1,4 @@
-import { ConsoleNode } from "@/lib/nodes";
+import { call, ConsoleNode } from "@/lib/nodes";
 import useStore, { getConnectedNode } from "@/store/useStore";
 
 interface ConsolePanelProps {
@@ -9,9 +9,14 @@ export default function ConsolePanel({ node }: ConsolePanelProps) {
     const updateNode = useStore((state) => state.updateNode);
     const state = useStore.getState();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        getConnectedNode(state, node.id)?.call(state, node.prompt);
+
+        const next = getConnectedNode(state, node.id);
+
+        if (next) {
+            await call(next, state, node.state.prompt);
+        }
     };
 
     return (
@@ -20,9 +25,9 @@ export default function ConsolePanel({ node }: ConsolePanelProps) {
                 <div className="flex flex-col gap-2">
                     <label className="text-sm text-gray-300">User Prompt</label>
                     <textarea
-                        value={node.prompt}
+                        value={node.state.prompt}
                         onChange={(e) => {
-                            node.prompt = e.target.value;
+                            node.state.prompt = e.target.value;
                             updateNode(node);
                         }}
                         className="h-32 rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-gray-200"

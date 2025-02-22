@@ -1,10 +1,6 @@
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import useStore from "@/store/useStore";
-import { ConsoleNode, LLMNode, Node } from "../lib/nodes";
-import { CaseNode } from "../lib/nodes/CaseNode";
-import { EndNode } from "../lib/nodes/EndNode";
-import { VectorDBRetrieveNode } from "../lib/nodes/VectorDBRetrieveNode";
-import { VectorDBStoreNode } from "../lib/nodes/VectorDBStoreNode";
+import { getConnectorPositions, NewNode } from "../lib/nodes";
 import { CaseNode as CaseNodeComponent } from "./nodes/CaseNode";
 import { ConsoleNode as ConsoleNodeComponent } from "./nodes/ConsoleNode";
 import { EndNode as EndNodeComponent } from "./nodes/EndNode";
@@ -24,7 +20,7 @@ interface Wire {
 interface ContextMenuProps {
     x: number;
     y: number;
-    onAddNode: (_f: (_x: number, _y: number) => Node) => void;
+    onAddNode: (_f: (_x: number, _y: number) => NewNode) => void;
     onClose: () => void;
 }
 
@@ -81,9 +77,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode(
-                        (x, y) => new ConsoleNode(crypto.randomUUID(), x, y)
-                    );
+                    onAddNode((x, y) => ({
+                        id: crypto.randomUUID(),
+                        x,
+                        y,
+                        type: "console",
+                        state: {
+                            prompt: ""
+                        }
+                    }));
                     onClose();
                 }}
                 style={buttonStyle}
@@ -99,7 +101,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode((x, y) => new LLMNode(crypto.randomUUID(), x, y));
+                    onAddNode((x, y) => ({
+                        id: crypto.randomUUID(),
+                        x,
+                        y,
+                        type: "llm",
+                        state: {
+                            loading: false,
+                            error: null,
+                            prompt: "",
+                            structuredOutput: false
+                        }
+                    }));
                     onClose();
                 }}
                 style={buttonStyle}
@@ -115,7 +128,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode((x, y) => new EndNode(crypto.randomUUID(), x, y));
+                    onAddNode((x, y) => ({
+                        id: crypto.randomUUID(),
+                        x,
+                        y,
+                        type: "end",
+                        state: {
+                            value: ""
+                        }
+                    }));
                     onClose();
                 }}
                 style={buttonStyle}
@@ -131,9 +152,17 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode(
-                        (x, y) => new CaseNode(crypto.randomUUID(), x, y)
-                    );
+                    onAddNode((x, y) => ({
+                        id: crypto.randomUUID(),
+                        x,
+                        y,
+                        type: "case",
+                        state: {
+                            caseKey: "",
+                            valueKey: "",
+                            cases: []
+                        }
+                    }));
                     onClose();
                 }}
                 style={buttonStyle}
@@ -149,10 +178,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode(
-                        (x, y) =>
-                            new VectorDBStoreNode(crypto.randomUUID(), x, y)
-                    );
+                    onAddNode((x, y) => ({
+                        id: crypto.randomUUID(),
+                        x,
+                        y,
+                        type: "vectordb-store",
+                        state: {}
+                    }));
                     onClose();
                 }}
                 style={buttonStyle}
@@ -168,10 +200,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <button
                 onMouseDown={(e) => {
                     e.stopPropagation();
-                    onAddNode(
-                        (x, y) =>
-                            new VectorDBRetrieveNode(crypto.randomUUID(), x, y)
-                    );
+                    onAddNode((x, y) => ({
+                        id: crypto.randomUUID(),
+                        x,
+                        y,
+                        type: "vectordb-retrieve",
+                        state: {}
+                    }));
                     onClose();
                 }}
                 style={buttonStyle}
@@ -250,7 +285,7 @@ export const Grid: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const addNodeCallback = useCallback(
-        (f: (_x: number, _y: number) => Node) => {
+        (f: (_x: number, _y: number) => NewNode) => {
             if (!contextMenu) {
                 return;
             }
@@ -324,7 +359,8 @@ export const Grid: React.FC = () => {
 
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            const positions = node.getConnectorPositions(
+            const positions = getConnectorPositions(
+                node,
                 node.x - position.x + centerX,
                 node.y - position.y + centerY
             );
@@ -483,11 +519,13 @@ export const Grid: React.FC = () => {
                     return null;
                 }
 
-                const fromPositions = fromNode.getConnectorPositions(
+                const fromPositions = getConnectorPositions(
+                    fromNode,
                     fromNode.x - position.x + centerX,
                     fromNode.y - position.y + centerY
                 );
-                const toPositions = toNode.getConnectorPositions(
+                const toPositions = getConnectorPositions(
+                    toNode,
                     toNode.x - position.x + centerX,
                     toNode.y - position.y + centerY
                 );
@@ -575,6 +613,7 @@ export const Grid: React.FC = () => {
                                 onMouseDown={handleNodeMouseDown}
                                 onStartConnection={handleStartConnection}
                                 onEndConnection={handleEndConnection}
+                                node={node}
                             />
                         );
                     case "llm":
@@ -588,6 +627,7 @@ export const Grid: React.FC = () => {
                                 onMouseDown={handleNodeMouseDown}
                                 onStartConnection={handleStartConnection}
                                 onEndConnection={handleEndConnection}
+                                node={node}
                             />
                         );
                     case "end":
@@ -601,6 +641,7 @@ export const Grid: React.FC = () => {
                                 onMouseDown={handleNodeMouseDown}
                                 onStartConnection={handleStartConnection}
                                 onEndConnection={handleEndConnection}
+                                node={node}
                             />
                         );
                     case "case":
@@ -610,7 +651,7 @@ export const Grid: React.FC = () => {
                                 id={node.id}
                                 screenX={screenX}
                                 screenY={screenY}
-                                node={node as CaseNode}
+                                node={node}
                                 selected={selectedNode?.id === node.id}
                                 onMouseDown={handleNodeMouseDown}
                                 onStartConnection={handleStartConnection}
@@ -628,6 +669,7 @@ export const Grid: React.FC = () => {
                                 onMouseDown={handleNodeMouseDown}
                                 onStartConnection={handleStartConnection}
                                 onEndConnection={handleEndConnection}
+                                node={node}
                             />
                         );
                     case "vectordb-retrieve":
@@ -641,6 +683,7 @@ export const Grid: React.FC = () => {
                                 onMouseDown={handleNodeMouseDown}
                                 onStartConnection={handleStartConnection}
                                 onEndConnection={handleEndConnection}
+                                node={node}
                             />
                         );
                     default:

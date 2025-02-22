@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Node } from "../lib/nodes";
+import { NewNode } from "../lib/nodes";
 
 interface Wire {
     id: string;
@@ -10,16 +10,16 @@ interface Wire {
 }
 
 export interface Store {
-    nodes: Map<string, Node>;
+    nodes: Map<string, NewNode>;
     wires: Map<string, Wire>;
-    selectedNode: Node | null;
+    selectedNode: NewNode | null;
     openAIKey: string;
-    addNode: (_node: Node) => void;
+    addNode: (_node: NewNode) => void;
     removeNode: (_id: string) => void;
     addWire: (_wire: Wire) => void;
     removeWire: (_id: string) => void;
-    setSelectedNode: (_node: Node | null) => void;
-    updateNode: (_node: Node) => void;
+    setSelectedNode: (_node: NewNode | null) => void;
+    updateNode: (_node: NewNode) => void;
     setOpenAIKey: (_key: string) => void;
 }
 
@@ -29,7 +29,7 @@ const useStore = create<Store>((set) => ({
     selectedNode: null,
     openAIKey: "",
 
-    addNode: (node: Node) =>
+    addNode: (node: NewNode) =>
         set((state) => {
             const newNodes = new Map(state.nodes);
             newNodes.set(node.id, node);
@@ -72,15 +72,15 @@ const useStore = create<Store>((set) => ({
             };
         }),
 
-    setSelectedNode: (node: Node | null) =>
+    setSelectedNode: (node: NewNode | null) =>
         set({
             selectedNode: node
         }),
 
-    updateNode: (node: Node) => {
+    updateNode: (node: NewNode) => {
         set((state) => {
             const newNodes = new Map(state.nodes);
-            newNodes.set(node.id, node.copy());
+            newNodes.set(node.id, { ...node });
             return { nodes: newNodes };
         });
     },

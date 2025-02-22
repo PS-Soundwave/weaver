@@ -1,4 +1,8 @@
-import { VectorDBStoreNode as VectorDBStoreNodeClass } from "../../lib/nodes/VectorDBStoreNode";
+import {
+    Connector as ConnectorModel,
+    getConnectorPositions,
+    VectorDBStoreNode as VectorDBStoreNodeModel
+} from "../../lib/nodes";
 import { BaseNode } from "./BaseNode";
 
 interface VectorDBStoreNodeProps {
@@ -17,6 +21,7 @@ interface VectorDBStoreNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    node: VectorDBStoreNodeModel;
 }
 
 export const VectorDBStoreNode = ({
@@ -26,21 +31,25 @@ export const VectorDBStoreNode = ({
     selected,
     onMouseDown,
     onStartConnection,
-    onEndConnection
+    onEndConnection,
+    node
 }: VectorDBStoreNodeProps) => {
-    const nodeInstance = new VectorDBStoreNodeClass(id, 0, 0);
-    const connectorPositions = nodeInstance.getConnectorPositions(
-        screenX,
-        screenY
-    );
+    const WIDTH = 150;
+    const HEIGHT = 80;
+
+    const connectors: ConnectorModel[] = [
+        { id: `${id}-input`, type: "input" },
+        { id: `${id}-output`, type: "output" }
+    ];
+    const connectorPositions = getConnectorPositions(node, screenX, screenY);
 
     return (
         <BaseNode onMouseDown={onMouseDown} id={id}>
             <foreignObject
                 x={screenX}
                 y={screenY}
-                width={VectorDBStoreNodeClass.WIDTH}
-                height={VectorDBStoreNodeClass.HEIGHT}
+                width={WIDTH}
+                height={HEIGHT}
             >
                 <div
                     className={`h-full w-full rounded border-2 bg-gray-800 p-2 ${
@@ -52,7 +61,7 @@ export const VectorDBStoreNode = ({
                     </div>
                 </div>
             </foreignObject>
-            {nodeInstance.getConnectors().map((connector) => {
+            {connectors.map((connector) => {
                 const position = connectorPositions.find(
                     (pos) => pos.id === connector.id
                 );
