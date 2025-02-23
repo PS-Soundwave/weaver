@@ -1,10 +1,6 @@
 import React from "react";
-import {
-    Connector as ConnectorModel,
-    EndNode as EndNodeModel,
-    getConnectorPositions
-} from "../../lib/nodes";
-import { BaseNode, Connector, getNodeColors } from "./BaseNode";
+import { EndNode as EndNodeModel } from "../../lib/nodes";
+import { BaseNode } from "./BaseNode";
 
 interface EndNodeProps {
     id: string;
@@ -38,35 +34,20 @@ export const EndNode: React.FC<EndNodeProps> = ({
     onEndConnection,
     node
 }) => {
-    const colors = getNodeColors(selected);
-    const connectors: ConnectorModel[] = [{ id: `${id}-input`, type: "input" }];
-    const connectorPositions = getConnectorPositions(node, screenX, screenY);
-
     return (
-        <BaseNode id={id} onMouseDown={onMouseDown}>
-            <rect
-                x={screenX - WIDTH / 2}
-                y={screenY - HEIGHT / 2}
-                width={WIDTH}
-                height={HEIGHT}
-                fill={colors.fill}
-                stroke={colors.stroke}
-                strokeWidth={2}
-                rx={5}
-                ry={5}
-            />
-            {connectors.map((connector, i) => (
-                <Connector
-                    key={connector.id}
-                    cx={connectorPositions[i].x}
-                    cy={connectorPositions[i].y}
-                    type={connector.type}
-                    id={connector.id}
-                    nodeId={id}
-                    onStartConnection={onStartConnection}
-                    onEndConnection={onEndConnection}
-                />
-            ))}
+        <BaseNode
+            id={id}
+            onMouseDown={onMouseDown}
+            node={node}
+            onStartConnection={onStartConnection}
+            onEndConnection={onEndConnection}
+            screenX={screenX}
+            screenY={screenY}
+            selected={selected}
+            width={WIDTH}
+            height={HEIGHT}
+        >
+            End
         </BaseNode>
     );
 };

@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 import { CasePanel } from "@/components/nodes/Case/CasePanel";
-import { getConnectors } from "@/components/nodes/CaseNode";
 import ConsolePanel from "@/components/nodes/Console/ConsolePanel";
 import { EndPanel } from "@/components/nodes/End/EndPanel";
 import LLMPanel from "@/components/nodes/LLM/LLMPanel";
@@ -108,7 +107,49 @@ const getDelayForSpeed = (
     }
 };
 
+export const getConnectors = (node: NewNode): Connector[] => {
+    switch (node.type) {
+        case "end":
+            return [{ id: `${node.id}-input`, type: "input" }];
+        case "llm":
+            return [
+                { id: `${node.id}-input`, type: "input" },
+                { id: `${node.id}-output`, type: "output" }
+            ];
+        case "case": {
+            const connectors: Connector[] = [
+                { id: `${node.id}-input`, type: "input" }
+            ];
+
+            // Add an output connector for each case
+            node.state.cases.forEach((caseValue) => {
+                connectors.push({
+                    id: `${node.id}-output-${caseValue}`,
+                    type: "output"
+                });
+            });
+
+            return connectors;
+        }
+        case "console":
+            return [{ id: `${node.id}-output`, type: "output" }];
+        case "vectordb-store":
+            return [
+                { id: `${node.id}-input`, type: "input" },
+                { id: `${node.id}-output`, type: "output" }
+            ];
+        case "vectordb-retrieve":
+            return [
+                { id: `${node.id}-input`, type: "input" },
+                { id: `${node.id}-output`, type: "output" }
+            ];
+        default:
+            return [];
+    }
+};
+
 export const call = async (node: NewNode, state: Store, prompt: string) => {
+    state.setActiveNode(node);
     // Add delay based on execution speed setting
     const delay = getDelayForSpeed(state.executionSpeed);
     if (delay > 0) {
@@ -146,6 +187,7 @@ export const call = async (node: NewNode, state: Store, prompt: string) => {
 
                 const next = getConnectedNode(state, node.id);
 
+                state.setActiveNode(null);
                 if (next) {
                     await call(next, state, result);
                 }
@@ -159,11 +201,13 @@ export const call = async (node: NewNode, state: Store, prompt: string) => {
             } finally {
                 node.state.loading = false;
                 state.updateNode(node);
+                state.setActiveNode(null);
             }
             break;
         case "end":
             node.state.value = prompt;
             state.updateNode(node);
+            state.setActiveNode(null);
             break;
         case "case":
             try {
@@ -196,11 +240,14 @@ export const call = async (node: NewNode, state: Store, prompt: string) => {
                     `${node.id}-output-${caseValue}`
                 );
 
+                state.setActiveNode(null);
                 if (next) {
                     await call(next, state, JSON.stringify(outputValue));
                 }
             } catch (e) {
                 console.error("Failed to parse JSON input:", e);
+            } finally {
+                state.setActiveNode(null);
             }
             break;
         case "vectordb-store":
@@ -231,12 +278,15 @@ export const call = async (node: NewNode, state: Store, prompt: string) => {
 
                 const next = getConnectedNode(state, node.id);
 
+                state.setActiveNode(null);
                 if (next) {
                     await call(next, state, prompt);
                 }
             } catch (error) {
                 console.error("Error in VectorDBStoreNode:", error);
                 throw error;
+            } finally {
+                state.setActiveNode(null);
             }
             break;
         case "vectordb-retrieve":
@@ -271,18 +321,30 @@ export const call = async (node: NewNode, state: Store, prompt: string) => {
 
                 const next = getConnectedNode(state, node.id);
 
+                state.setActiveNode(null);
+
                 if (next) {
                     await call(next, state, output);
                 }
             } catch (error) {
                 console.error("Error in VectorDBRetrieveNode:", error);
                 throw error;
+            } finally {
+                state.setActiveNode(null);
+            }
+            break;
+        case "console":
+            {
+                const next = getConnectedNode(state, node.id);
+                state.setActiveNode(null);
+                if (next) {
+                    await call(next, state, prompt);
+                }
             }
             break;
         default:
-            throw new Error(
-                `Node type "${node.type}" does not support calling`
-            );
+            state.setActiveNode(null);
+            break;
     }
 };
 
@@ -394,35 +456,33 @@ export const getConnectorPositions = (
         }
         case "vectordb-store": {
             const WIDTH = 150;
-            const HEIGHT = 80;
 
             return [
                 {
                     id: `${node.id}-input`,
-                    x: screenX,
-                    y: screenY + HEIGHT / 2
+                    x: screenX - WIDTH / 2,
+                    y: screenY
                 },
                 {
                     id: `${node.id}-output`,
-                    x: screenX + WIDTH,
-                    y: screenY + HEIGHT / 2
+                    x: screenX + WIDTH / 2,
+                    y: screenY
                 }
             ];
         }
         case "vectordb-retrieve": {
             const WIDTH = 150;
-            const HEIGHT = 80;
 
             return [
                 {
                     id: `${node.id}-input`,
-                    x: screenX,
-                    y: screenY + HEIGHT / 2
+                    x: screenX - WIDTH / 2,
+                    y: screenY
                 },
                 {
                     id: `${node.id}-output`,
-                    x: screenX + WIDTH,
-                    y: screenY + HEIGHT / 2
+                    x: screenX + WIDTH / 2,
+                    y: screenY
                 }
             ];
         }

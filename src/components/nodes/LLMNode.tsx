@@ -1,10 +1,6 @@
 import React from "react";
-import {
-    Connector as ConnectorModel,
-    getConnectorPositions,
-    LLMNode as LLMNodeModel
-} from "../../lib/nodes";
-import { BaseNode, Connector, getNodeColors } from "./BaseNode";
+import { LLMNode as LLMNodeModel } from "../../lib/nodes";
+import { BaseNode } from "./BaseNode";
 
 interface LLMNodeProps {
     id: string;
@@ -37,40 +33,21 @@ export const LLMNode: React.FC<LLMNodeProps> = ({
 }) => {
     const WIDTH = 120;
     const HEIGHT = 80;
-    const colors = getNodeColors(selected);
-    const connectors: ConnectorModel[] = [
-        { id: `${id}-input`, type: "input" },
-        { id: `${id}-output`, type: "output" }
-    ];
-    const connectorPositions = getConnectorPositions(node, screenX, screenY);
 
     return (
-        <BaseNode id={id} onMouseDown={onMouseDown}>
-            <rect
-                x={screenX - WIDTH / 2}
-                y={screenY - HEIGHT / 2}
-                width={WIDTH}
-                height={HEIGHT}
-                fill={colors.fill}
-                stroke={colors.stroke}
-                strokeWidth={2}
-                rx={4}
-            />
-            {connectors.map((connector, index) => {
-                const position = connectorPositions[index];
-                return (
-                    <Connector
-                        key={connector.id}
-                        cx={position.x}
-                        cy={position.y}
-                        type={connector.type}
-                        id={connector.id}
-                        nodeId={id}
-                        onStartConnection={onStartConnection}
-                        onEndConnection={onEndConnection}
-                    />
-                );
-            })}
+        <BaseNode
+            id={id}
+            onMouseDown={onMouseDown}
+            onStartConnection={onStartConnection}
+            onEndConnection={onEndConnection}
+            node={node}
+            screenX={screenX}
+            screenY={screenY}
+            selected={selected}
+            width={WIDTH}
+            height={HEIGHT}
+        >
+            LLM
         </BaseNode>
     );
 };

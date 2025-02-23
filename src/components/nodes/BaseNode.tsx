@@ -1,28 +1,101 @@
 import React from "react";
+import { getConnectorPositions, getConnectors, NewNode } from "@/lib/nodes";
+import useStore from "@/store/useStore";
 
 interface BaseNodeProps {
     id: string;
+    node: NewNode;
+    screenX: number;
+    screenY: number;
+    width: number;
+    height: number;
+    selected: boolean;
     onMouseDown: (_e: React.MouseEvent, _id: string) => void;
+    onStartConnection: (
+        _connectorId: string,
+        _type: "input" | "output",
+        _nodeId: string
+    ) => void;
+    onEndConnection: (
+        _connectorId: string,
+        _type: "input" | "output",
+        _nodeId: string
+    ) => void;
 }
 
 export const BaseNode: React.FC<BaseNodeProps & React.PropsWithChildren> = ({
     onMouseDown,
+    onStartConnection,
+    onEndConnection,
     id,
-    children
+    node,
+    children,
+    screenX,
+    screenY,
+    width,
+    height,
+    selected
 }) => {
+    const active = useStore((state) => state.activeNode?.id === node.id);
+    const connectors = getConnectors(node);
+    const colors = getNodeColors(selected, active);
+    const connectorPositions = getConnectorPositions(node, screenX, screenY);
+
     return (
         <g
             onMouseDown={(e) => onMouseDown(e, id)}
             style={{ cursor: "pointer" }}
         >
-            {children}
+            <rect
+                x={screenX - width / 2}
+                y={screenY - height / 2}
+                width={width}
+                height={height}
+                fill={colors.fill}
+                stroke={colors.stroke}
+                strokeWidth={2}
+                rx={4}
+            />
+            <text
+                x={screenX}
+                y={screenY}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill="white"
+                fontSize={14}
+            >
+                {children}
+            </text>
+            {connectors.map((connector, index) => {
+                const position = connectorPositions[index];
+                return (
+                    <Connector
+                        key={connector.id}
+                        cx={position.x}
+                        cy={position.y}
+                        type={connector.type}
+                        id={connector.id}
+                        nodeId={id}
+                        onStartConnection={onStartConnection}
+                        onEndConnection={onEndConnection}
+                    />
+                );
+            })}
         </g>
     );
 };
 
-export const getNodeColors = (selected: boolean) => ({
-    fill: selected ? "rgba(167, 139, 250, 0.3)" : "rgba(75, 85, 99, 0.3)",
-    stroke: selected ? "rgb(167, 139, 250, 0.8)" : "rgb(75, 85, 99, 0.8)"
+export const getNodeColors = (selected: boolean, active: boolean) => ({
+    fill: active
+        ? "rgba(255, 215, 0, 0.3)"
+        : selected
+          ? "rgba(167, 139, 250, 0.3)"
+          : "rgba(75, 85, 99, 0.3)",
+    stroke: active
+        ? "rgb(255, 215, 0, 0.8)"
+        : selected
+          ? "rgb(167, 139, 250, 0.8)"
+          : "rgb(75, 85, 99, 0.8)"
 });
 
 const CONNECTOR_RADIUS = 6;
