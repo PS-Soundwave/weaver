@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { ReactElement } from "react";
 import { useVectorDB } from "@/lib/database/vectordb";
 import {
     getConnectedNode,
@@ -65,7 +66,7 @@ export type VectorDBRetrieveNode = NewBaseNode & {
     state: Record<string, never>;
 };
 
-export type Node =
+export type GraphNode =
     | LLMNode
     | ConsoleNode
     | EndNode
@@ -97,9 +98,9 @@ type NodeProps = {
     onContextMenu: (_e: React.MouseEvent, _id: string) => void;
 };
 
-type NodeFactory = (_node: Node) => {
+type NodeFactory = (_node: GraphNode) => {
     Node: React.FC<NodeProps>;
-    Panel: React.FC;
+    Panel: ReactElement;
     getConnectors: (_x: number, _y: number) => Connector[];
     call: (_state: Store, _input: string) => void;
 };
@@ -119,12 +120,12 @@ const getDelayForSpeed = (
     }
 };
 
-export const getNodeFactory: NodeFactory = (node: Node) => {
+export const getNodeFactory: NodeFactory = (node: GraphNode) => {
     switch (node.type) {
         case "llm":
             return {
                 Node: (props: NodeProps) => <LLMNode node={node} {...props} />,
-                Panel: () => <LLMPanel node={node} />,
+                Panel: <LLMPanel node={node} />,
                 getConnectors: (x: number, y: number) => {
                     const LLM_WIDTH = 120;
                     return [
@@ -207,7 +208,7 @@ export const getNodeFactory: NodeFactory = (node: Node) => {
         case "end":
             return {
                 Node: (props: NodeProps) => <EndNode node={node} {...props} />,
-                Panel: () => <EndPanel node={node} />,
+                Panel: <EndPanel node={node} />,
                 getConnectors: (x: number, y: number) => {
                     const END_WIDTH = 120;
 
@@ -237,7 +238,7 @@ export const getNodeFactory: NodeFactory = (node: Node) => {
         case "case":
             return {
                 Node: (props: NodeProps) => <CaseNode node={node} {...props} />,
-                Panel: () => <CasePanel node={node} />,
+                Panel: <CasePanel node={node} />,
                 getConnectors: (x: number, y: number) => {
                     const WIDTH = 80;
                     const HEIGHT = 150;
@@ -323,7 +324,7 @@ export const getNodeFactory: NodeFactory = (node: Node) => {
                 Node: (props: NodeProps) => (
                     <ConsoleNode node={node} {...props} />
                 ),
-                Panel: () => <ConsolePanel node={node} />,
+                Panel: <ConsolePanel node={node} />,
                 getConnectors: (x: number, y: number) => {
                     const CONSOLE_SIZE = 150;
                     return [
@@ -357,7 +358,7 @@ export const getNodeFactory: NodeFactory = (node: Node) => {
                 Node: (props: NodeProps) => (
                     <VectorDBStoreNode node={node} {...props} />
                 ),
-                Panel: () => (
+                Panel: (
                     <div className="p-4">
                         <h3 className="text-lg font-bold">Vector DB Store</h3>
                         <p className="text-sm text-gray-600">
@@ -437,7 +438,7 @@ export const getNodeFactory: NodeFactory = (node: Node) => {
                 Node: (props: NodeProps) => (
                     <VectorDBRetrieveNode node={node} {...props} />
                 ),
-                Panel: () => (
+                Panel: (
                     <div className="p-4">
                         <h3 className="text-lg font-bold">
                             Vector DB Retrieve

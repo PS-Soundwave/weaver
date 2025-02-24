@@ -10,7 +10,7 @@ export const BottomPanel: React.FC = () => {
             return null;
         }
 
-        return state.nodes.get(state.selectedNode.id);
+        return state.nodes.get(state.selectedNode.id)!;
     });
 
     return (
@@ -20,11 +20,7 @@ export const BottomPanel: React.FC = () => {
                 <h2 className="mb-4 text-lg font-medium text-gray-200">
                     {selectedNode?.type ?? "No node selected"}
                 </h2>
-                {selectedNode &&
-                    (() => {
-                        const Panel = getNodeFactory(selectedNode).Panel;
-                        return <Panel />;
-                    })()}
+                {selectedNode && getNodeFactory(selectedNode).Panel}
             </div>
         </div>
     );

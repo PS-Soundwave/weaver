@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { Node } from "@/components/nodes/NodeFactory";
+import { GraphNode } from "@/components/nodes/NodeFactory";
 
-interface Wire {
+export interface Wire {
     id: string;
     fromNode: string;
     fromConnector: string;
@@ -10,26 +10,28 @@ interface Wire {
 }
 
 export interface Store {
-    nodes: Map<string, Node>;
+    nodes: Map<string, GraphNode>;
     wires: Map<string, Wire>;
-    selectedNode: Node | null;
-    activeNode: Node | null;
+    selectedNode: GraphNode | null;
+    activeNode: GraphNode | null;
     openAIKey: string;
     executionSpeed: "realtime" | "fast" | "medium" | "slow";
-    addNode: (_node: Node) => void;
+    addNode: (_node: GraphNode) => void;
     removeNode: (_id: string) => void;
     addWire: (_wire: Wire) => void;
     removeWire: (_id: string) => void;
-    setSelectedNode: (_node: Node | null) => void;
-    setActiveNode: (_node: Node | null) => void;
-    updateNode: (_node: Node) => void;
+    setSelectedNode: (_node: GraphNode | null) => void;
+    setActiveNode: (_node: GraphNode | null) => void;
+    updateNode: (_node: GraphNode) => void;
     setOpenAIKey: (_key: string) => void;
     setExecutionSpeed: (
         _speed: "realtime" | "fast" | "medium" | "slow"
     ) => void;
+    exportState: () => string;
+    importState: (_json: string) => void;
 }
 
-const useStore = create<Store>((set) => ({
+const useStore = create<Store>((set, get) => ({
     nodes: new Map(),
     wires: new Map(),
     selectedNode: null,
@@ -37,7 +39,7 @@ const useStore = create<Store>((set) => ({
     openAIKey: "",
     executionSpeed: "medium",
 
-    addNode: (node: Node) =>
+    addNode: (node: GraphNode) =>
         set((state) => {
             const Nodes = new Map(state.nodes);
             Nodes.set(node.id, node);
@@ -80,23 +82,24 @@ const useStore = create<Store>((set) => ({
             };
         }),
 
-    setSelectedNode: (node: Node | null) =>
+    setSelectedNode: (node: GraphNode | null) =>
         set({
             selectedNode: node
         }),
 
-    setActiveNode: (node: Node | null) =>
+    setActiveNode: (node: GraphNode | null) =>
         set({
             activeNode: node
         }),
 
-    updateNode: (node: Node) => {
+    updateNode: (node: GraphNode) => {
+        console.log("Update");
         set((state) => {
-            const Nodes = new Map(state.nodes);
-            const Node = { ...node };
-            Node.state = { ...node.state };
-            Nodes.set(node.id, Node);
-            return { nodes: Nodes };
+            const nodes = new Map(state.nodes);
+            const newNode = { ...node };
+            newNode.state = { ...node.state };
+            nodes.set(node.id, newNode);
+            return { nodes };
         });
     },
 
@@ -105,10 +108,14 @@ const useStore = create<Store>((set) => ({
             openAIKey: key
         }),
 
-    setExecutionSpeed: (speed: "realtime" | "fast" | "medium" | "slow") =>
-        set({
+    setExecutionSpeed: (speed) =>
+        set(() => ({
             executionSpeed: speed
-        })
+        })),
+
+    exportState: () => exportToJson(get()),
+
+    importState: (json) => set(importFromJson(json))
 }));
 
 export default useStore;
@@ -131,4 +138,26 @@ export const getNodeThroughConnector = (state: Store, connectorId: string) => {
     }
 
     return state.nodes.get(wire.toNode);
+};
+
+const exportToJson = (state: Store): string =>
+    JSON.stringify({
+        nodes: Array.from(state.nodes.values()),
+        wires: Array.from(state.wires.values()),
+        selectedNode: state.selectedNode,
+        activeNode: state.activeNode,
+        openAIKey: state.openAIKey,
+        executionSpeed: state.executionSpeed
+    });
+
+const importFromJson = (json: string): Partial<Store> => {
+    const data = JSON.parse(json);
+    return {
+        nodes: new Map(data.nodes.map((node: GraphNode) => [node.id, node])),
+        wires: new Map(data.wires.map((wire: Wire) => [wire.id, wire])),
+        selectedNode: data.selectedNode,
+        activeNode: data.activeNode,
+        openAIKey: data.openAIKey,
+        executionSpeed: data.executionSpeed
+    };
 };

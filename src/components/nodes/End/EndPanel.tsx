@@ -1,4 +1,4 @@
-import { EndNode } from "@/lib/nodes";
+import { EndNode } from "../NodeFactory";
 
 interface EndPanelProps {
     node: EndNode;

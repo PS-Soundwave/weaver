@@ -1,5 +1,5 @@
-import { LLMNode } from "@/lib/nodes";
 import useStore from "@/store/useStore";
+import { LLMNode } from "../NodeFactory";
 
 interface LLMPanelProps {
     node: LLMNode;

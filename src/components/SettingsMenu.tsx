@@ -2,7 +2,7 @@ import { useState } from "react";
 import useStore from "../store/useStore";
 
 export const SettingsMenu: React.FC = () => {
-    const { openAIKey, setOpenAIKey, executionSpeed, setExecutionSpeed } = useStore();
+    const { openAIKey, setOpenAIKey, executionSpeed, setExecutionSpeed, exportState, importState } = useStore();
     const [isOpen, setIsOpen] = useState(false);
     const [key, setKey] = useState(openAIKey);
     const [speed, setSpeed] = useState(executionSpeed);
@@ -11,6 +11,41 @@ export const SettingsMenu: React.FC = () => {
         setOpenAIKey(key);
         setExecutionSpeed(speed);
         setIsOpen(false);
+    };
+
+    const handleExport = () => {
+        const json = exportState();
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        try {
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "weaver-agent.json";
+            link.click();
+        } catch (error) {
+            console.error("Failed to export agent:", error);
+        } finally {
+            URL.revokeObjectURL(url);
+        }
+    };
+
+    const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = e.target?.result as string;
+                importState(json);
+            } catch (error) {
+                console.error("Failed to import agent:", error);
+            }
+        };
+        reader.readAsText(file);
     };
 
     return (
@@ -54,6 +89,23 @@ export const SettingsMenu: React.FC = () => {
                                 <option value="medium">Medium (1s)</option>
                                 <option value="slow">Slow (2s)</option>
                             </select>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleExport}
+                                className="flex-1 rounded-md bg-blue-600 px-3 py-2 text-white hover:bg-blue-500"
+                            >
+                                Export Agent
+                            </button>
+                            <label className="flex-1 cursor-pointer rounded-md bg-green-600 px-3 py-2 text-center text-white hover:bg-green-500">
+                                Import Agent
+                                <input
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleImport}
+                                    className="hidden"
+                                />
+                            </label>
                         </div>
                         <div className="flex justify-end space-x-2">
                             <button
