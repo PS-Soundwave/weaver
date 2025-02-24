@@ -101,6 +101,7 @@ type NodeProps = {
 type NodeFactory = (_node: GraphNode) => {
     Node: React.FC<NodeProps>;
     Panel: ReactElement;
+    name: string;
     getConnectors: (_x: number, _y: number) => Connector[];
     call: (_state: Store, _input: string) => void;
 };
@@ -126,6 +127,7 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
             return {
                 Node: (props: NodeProps) => <LLMNode node={node} {...props} />,
                 Panel: <LLMPanel node={node} />,
+                name: "LLM",
                 getConnectors: (x: number, y: number) => {
                     const LLM_WIDTH = 120;
                     return [
@@ -209,6 +211,7 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
             return {
                 Node: (props: NodeProps) => <EndNode node={node} {...props} />,
                 Panel: <EndPanel node={node} />,
+                name: "End",
                 getConnectors: (x: number, y: number) => {
                     const END_WIDTH = 120;
 
@@ -239,6 +242,7 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
             return {
                 Node: (props: NodeProps) => <CaseNode node={node} {...props} />,
                 Panel: <CasePanel node={node} />,
+                name: "Case",
                 getConnectors: (x: number, y: number) => {
                     const WIDTH = 80;
                     const HEIGHT = 150;
@@ -325,6 +329,7 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                     <ConsoleNode node={node} {...props} />
                 ),
                 Panel: <ConsolePanel node={node} />,
+                name: "Start",
                 getConnectors: (x: number, y: number) => {
                     const CONSOLE_SIZE = 150;
                     return [
@@ -366,6 +371,7 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                         </p>
                     </div>
                 ),
+                name: "Vector DB Storage",
                 getConnectors: (x: number, y: number) => {
                     const WIDTH = 150;
 
@@ -448,6 +454,7 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                         </p>
                     </div>
                 ),
+                name: "Vector DB Retrieval",
                 getConnectors: (x: number, y: number) => {
                     const WIDTH = 150;
 
