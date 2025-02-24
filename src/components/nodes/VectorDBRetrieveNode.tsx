@@ -1,11 +1,10 @@
-import { VectorDBRetrieveNode as VectorDBRetrieveNodeModel } from "../../lib/nodes";
+import useStore from "@/store/useStore";
 import { BaseNode } from "./BaseNode";
+import { VectorDBRetrieveNode as VectorDBRetrieveNodeModel } from "./NodeFactory";
 
 interface VectorDBRetrieveNodeProps {
-    id: string;
-    screenX: number;
-    screenY: number;
-    selected: boolean;
+    x: number;
+    y: number;
     onMouseDown: (_e: React.MouseEvent, _id: string) => void;
     onStartConnection: (
         _connectorId: string,
@@ -24,24 +23,24 @@ const WIDTH = 150;
 const HEIGHT = 80;
 
 export const VectorDBRetrieveNode = ({
-    id,
-    screenX,
-    screenY,
-    selected,
+    x,
+    y,
     onMouseDown,
     onStartConnection,
     onEndConnection,
     node
 }: VectorDBRetrieveNodeProps) => {
+    const selected = useStore((state) => state.selectedNode?.id === node.id);
+
     return (
         <BaseNode
             onMouseDown={onMouseDown}
-            id={id}
+            id={node.id}
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
-            screenX={screenX}
-            screenY={screenY}
+            screenX={x}
+            screenY={y}
             selected={selected}
             width={WIDTH}
             height={HEIGHT}

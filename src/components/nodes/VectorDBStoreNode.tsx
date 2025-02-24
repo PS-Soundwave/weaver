@@ -1,11 +1,10 @@
-import { VectorDBStoreNode as VectorDBStoreNodeModel } from "../../lib/nodes";
+import useStore from "@/store/useStore";
 import { BaseNode } from "./BaseNode";
+import { VectorDBStoreNode as VectorDBStoreNodeModel } from "./NodeFactory";
 
 interface VectorDBStoreNodeProps {
-    id: string;
-    screenX: number;
-    screenY: number;
-    selected: boolean;
+    x: number;
+    y: number;
     onMouseDown: (_e: React.MouseEvent, _id: string) => void;
     onStartConnection: (
         _connectorId: string,
@@ -21,10 +20,8 @@ interface VectorDBStoreNodeProps {
 }
 
 export const VectorDBStoreNode = ({
-    id,
-    screenX,
-    screenY,
-    selected,
+    x,
+    y,
     onMouseDown,
     onStartConnection,
     onEndConnection,
@@ -33,15 +30,17 @@ export const VectorDBStoreNode = ({
     const WIDTH = 150;
     const HEIGHT = 80;
 
+    const selected = useStore((state) => state.selectedNode?.id === node.id);
+
     return (
         <BaseNode
             onMouseDown={onMouseDown}
-            id={id}
+            id={node.id}
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
-            screenX={screenX}
-            screenY={screenY}
+            screenX={x}
+            screenY={y}
             selected={selected}
             width={WIDTH}
             height={HEIGHT}

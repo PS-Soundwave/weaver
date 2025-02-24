@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { CaseNode } from "@/lib/nodes";
 import useStore from "@/store/useStore";
+import { CaseNode } from "../NodeFactory";
 
 interface CasePanelProps {
     node: CaseNode;

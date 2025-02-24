@@ -1,12 +1,11 @@
 import React from "react";
-import { LLMNode as LLMNodeModel } from "../../lib/nodes";
+import useStore from "@/store/useStore";
 import { BaseNode } from "./BaseNode";
+import { LLMNode as LLMNodeModel } from "./NodeFactory";
 
 interface LLMNodeProps {
-    id: string;
-    screenX: number;
-    screenY: number;
-    selected: boolean;
+    x: number;
+    y: number;
     onMouseDown: (_e: React.MouseEvent, _id: string) => void;
     onStartConnection: (
         _connectorId: string,
@@ -22,27 +21,27 @@ interface LLMNodeProps {
 }
 
 export const LLMNode: React.FC<LLMNodeProps> = ({
-    id,
-    screenX,
-    screenY,
-    selected,
+    node,
+    x,
+    y,
     onMouseDown,
     onStartConnection,
-    onEndConnection,
-    node
+    onEndConnection
 }) => {
+    const selected = useStore((state) => state.selectedNode?.id === node.id);
+
     const WIDTH = 120;
     const HEIGHT = 80;
 
     return (
         <BaseNode
-            id={id}
+            id={node.id}
             onMouseDown={onMouseDown}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
             node={node}
-            screenX={screenX}
-            screenY={screenY}
+            screenX={x}
+            screenY={y}
             selected={selected}
             width={WIDTH}
             height={HEIGHT}

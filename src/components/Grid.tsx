@@ -1,12 +1,6 @@
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import useStore from "@/store/useStore";
-import { getConnectorPositions, NewNode } from "../lib/nodes";
-import { CaseNode as CaseNodeComponent } from "./nodes/CaseNode";
-import { ConsoleNode as ConsoleNodeComponent } from "./nodes/ConsoleNode";
-import { EndNode as EndNodeComponent } from "./nodes/EndNode";
-import { LLMNode as LLMNodeComponent } from "./nodes/LLMNode";
-import { VectorDBRetrieveNode as VectorDBRetrieveNodeComponent } from "./nodes/VectorDBRetrieveNode";
-import { VectorDBStoreNode as VectorDBStoreNodeComponent } from "./nodes/VectorDBStoreNode";
+import { getNodeFactory, NewNode } from "./nodes/NodeFactory";
 import { SettingsMenu } from "./SettingsMenu";
 
 interface Wire {
@@ -359,14 +353,13 @@ export const Grid: React.FC = () => {
 
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-            const positions = getConnectorPositions(
-                node,
+            const connectors = getNodeFactory(node).getConnectors(
                 node.x - position.x + centerX,
                 node.y - position.y + centerY
             );
-            const connectorPos = positions.find((p) => p.id === connectorId);
+            const connector = connectors.find((c) => c.id === connectorId);
 
-            if (!connectorPos) {
+            if (!connector) {
                 return;
             }
 
@@ -374,8 +367,8 @@ export const Grid: React.FC = () => {
                 fromNode: nodeId,
                 fromConnector: connectorId,
                 type,
-                startX: connectorPos.x,
-                startY: connectorPos.y
+                startX: connector.x,
+                startY: connector.y
             });
         },
         [nodes, position]
@@ -519,21 +512,19 @@ export const Grid: React.FC = () => {
                     return null;
                 }
 
-                const fromPositions = getConnectorPositions(
-                    fromNode,
+                const fromConnectors = getNodeFactory(fromNode).getConnectors(
                     fromNode.x - position.x + centerX,
                     fromNode.y - position.y + centerY
                 );
-                const toPositions = getConnectorPositions(
-                    toNode,
+                const toConnectors = getNodeFactory(toNode).getConnectors(
                     toNode.x - position.x + centerX,
                     toNode.y - position.y + centerY
                 );
 
-                const fromConnector = fromPositions.find(
+                const fromConnector = fromConnectors.find(
                     (p) => p.id === wire.fromConnector
                 );
-                const toConnector = toPositions.find(
+                const toConnector = toConnectors.find(
                     (p) => p.id === wire.toConnector
                 );
                 if (!fromConnector || !toConnector) {
@@ -601,100 +592,23 @@ export const Grid: React.FC = () => {
                     }
                 };
 
-                switch (node.type) {
-                    case "console":
-                        return (
-                            <ConsoleNodeComponent
-                                key={node.id}
-                                id={node.id}
-                                screenX={screenX}
-                                screenY={screenY}
-                                selected={selectedNode?.id === node.id}
-                                onMouseDown={handleNodeMouseDown}
-                                onStartConnection={handleStartConnection}
-                                onEndConnection={handleEndConnection}
-                                node={node}
-                            />
-                        );
-                    case "llm":
-                        return (
-                            <LLMNodeComponent
-                                key={node.id}
-                                id={node.id}
-                                screenX={screenX}
-                                screenY={screenY}
-                                selected={selectedNode?.id === node.id}
-                                onMouseDown={handleNodeMouseDown}
-                                onStartConnection={handleStartConnection}
-                                onEndConnection={handleEndConnection}
-                                node={node}
-                            />
-                        );
-                    case "end":
-                        return (
-                            <EndNodeComponent
-                                key={node.id}
-                                id={node.id}
-                                screenX={screenX}
-                                screenY={screenY}
-                                selected={selectedNode?.id === node.id}
-                                onMouseDown={handleNodeMouseDown}
-                                onStartConnection={handleStartConnection}
-                                onEndConnection={handleEndConnection}
-                                node={node}
-                            />
-                        );
-                    case "case":
-                        return (
-                            <CaseNodeComponent
-                                key={node.id}
-                                id={node.id}
-                                screenX={screenX}
-                                screenY={screenY}
-                                node={node}
-                                selected={selectedNode?.id === node.id}
-                                onMouseDown={handleNodeMouseDown}
-                                onStartConnection={handleStartConnection}
-                                onEndConnection={handleEndConnection}
-                            />
-                        );
-                    case "vectordb-store":
-                        return (
-                            <VectorDBStoreNodeComponent
-                                key={node.id}
-                                id={node.id}
-                                screenX={screenX}
-                                screenY={screenY}
-                                selected={selectedNode?.id === node.id}
-                                onMouseDown={handleNodeMouseDown}
-                                onStartConnection={handleStartConnection}
-                                onEndConnection={handleEndConnection}
-                                node={node}
-                            />
-                        );
-                    case "vectordb-retrieve":
-                        return (
-                            <VectorDBRetrieveNodeComponent
-                                key={node.id}
-                                id={node.id}
-                                screenX={screenX}
-                                screenY={screenY}
-                                selected={selectedNode?.id === node.id}
-                                onMouseDown={handleNodeMouseDown}
-                                onStartConnection={handleStartConnection}
-                                onEndConnection={handleEndConnection}
-                                node={node}
-                            />
-                        );
-                    default:
-                        return null;
-                }
+                const Node = getNodeFactory(node).Node;
+
+                return (
+                    <Node
+                        key={node.id}
+                        x={screenX}
+                        y={screenY}
+                        onMouseDown={handleNodeMouseDown}
+                        onStartConnection={handleStartConnection}
+                        onEndConnection={handleEndConnection}
+                    />
+                );
             })
         );
     }, [
         nodes,
         position,
-        selectedNode?.id,
         handleStartConnection,
         handleEndConnection,
         setSelectedNode

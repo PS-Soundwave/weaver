@@ -1,5 +1,5 @@
-import { call, ConsoleNode } from "@/lib/nodes";
 import useStore from "@/store/useStore";
+import { ConsoleNode, getNodeFactory } from "../NodeFactory";
 
 interface ConsolePanelProps {
     node: ConsoleNode;
@@ -12,7 +12,7 @@ export default function ConsolePanel({ node }: ConsolePanelProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        await call(node, state, node.state.prompt);
+        await getNodeFactory(node).call(state, node.state.prompt);
     };
 
     return (

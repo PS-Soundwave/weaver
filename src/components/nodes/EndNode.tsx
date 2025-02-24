@@ -1,12 +1,11 @@
 import React from "react";
-import { EndNode as EndNodeModel } from "../../lib/nodes";
+import useStore from "@/store/useStore";
 import { BaseNode } from "./BaseNode";
+import { EndNode as EndNodeModel } from "./NodeFactory";
 
 interface EndNodeProps {
-    id: string;
-    screenX: number;
-    screenY: number;
-    selected: boolean;
+    x: number;
+    y: number;
     onMouseDown: (_e: React.MouseEvent, _id: string) => void;
     onStartConnection: (
         _connectorId: string,
@@ -25,24 +24,24 @@ const WIDTH = 120;
 const HEIGHT = 50;
 
 export const EndNode: React.FC<EndNodeProps> = ({
-    id,
-    screenX,
-    screenY,
-    selected,
+    x,
+    y,
     onMouseDown,
     onStartConnection,
     onEndConnection,
     node
 }) => {
+    const selected = useStore((state) => state.selectedNode?.id === node.id);
+
     return (
         <BaseNode
-            id={id}
+            id={node.id}
             onMouseDown={onMouseDown}
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
-            screenX={screenX}
-            screenY={screenY}
+            screenX={x}
+            screenY={y}
             selected={selected}
             width={WIDTH}
             height={HEIGHT}

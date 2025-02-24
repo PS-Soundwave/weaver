@@ -1,12 +1,11 @@
 import React from "react";
-import { CaseNode as CaseNodeModel } from "../../lib/nodes";
+import useStore from "@/store/useStore";
 import { BaseNode } from "./BaseNode";
+import { CaseNode as CaseNodeModel } from "./NodeFactory";
 
 interface CaseNodeProps {
-    id: string;
-    screenX: number;
-    screenY: number;
-    selected: boolean;
+    x: number;
+    y: number;
     node: CaseNodeModel;
     onMouseDown: (_e: React.MouseEvent, _id: string) => void;
     onStartConnection: (
@@ -22,10 +21,8 @@ interface CaseNodeProps {
 }
 
 export const CaseNode: React.FC<CaseNodeProps> = ({
-    id,
-    screenX,
-    screenY,
-    selected,
+    x,
+    y,
     node,
     onMouseDown,
     onStartConnection,
@@ -34,11 +31,13 @@ export const CaseNode: React.FC<CaseNodeProps> = ({
     const WIDTH = 80;
     const HEIGHT = 150;
 
+    const selected = useStore((state) => state.selectedNode?.id === node.id);
+
     return (
         <BaseNode
-            screenX={screenX}
-            screenY={screenY}
-            id={id}
+            screenX={x}
+            screenY={y}
+            id={node.id}
             onMouseDown={onMouseDown}
             node={node}
             onStartConnection={onStartConnection}

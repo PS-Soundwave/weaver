@@ -1,6 +1,6 @@
 import React from "react";
-import { getConnectorPositions, getConnectors, NewNode } from "@/lib/nodes";
 import useStore from "@/store/useStore";
+import { getNodeFactory, NewNode } from "./NodeFactory";
 
 interface BaseNodeProps {
     id: string;
@@ -37,9 +37,8 @@ export const BaseNode: React.FC<BaseNodeProps & React.PropsWithChildren> = ({
     selected
 }) => {
     const active = useStore((state) => state.activeNode?.id === node.id);
-    const connectors = getConnectors(node);
+    const connectors = getNodeFactory(node).getConnectors(screenX, screenY);
     const colors = getNodeColors(selected, active);
-    const connectorPositions = getConnectorPositions(node, screenX, screenY);
 
     return (
         <g
@@ -66,13 +65,12 @@ export const BaseNode: React.FC<BaseNodeProps & React.PropsWithChildren> = ({
             >
                 {children}
             </text>
-            {connectors.map((connector, index) => {
-                const position = connectorPositions[index];
+            {connectors.map((connector) => {
                 return (
                     <Connector
                         key={connector.id}
-                        cx={position.x}
-                        cy={position.y}
+                        cx={connector.x}
+                        cy={connector.y}
                         type={connector.type}
                         id={connector.id}
                         nodeId={id}

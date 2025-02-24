@@ -1,12 +1,11 @@
 import React from "react";
-import { ConsoleNode as ConsoleNodeModel } from "../../lib/nodes";
+import useStore from "@/store/useStore";
 import { BaseNode } from "./BaseNode";
+import { ConsoleNode as ConsoleNodeModel } from "./NodeFactory";
 
 interface ConsoleNodeProps {
-    id: string;
-    screenX: number;
-    screenY: number;
-    selected: boolean;
+    x: number;
+    y: number;
     onMouseDown: (_e: React.MouseEvent, _id: string) => void;
     onStartConnection: (
         _connectorId: string,
@@ -22,10 +21,8 @@ interface ConsoleNodeProps {
 }
 
 export const ConsoleNode: React.FC<ConsoleNodeProps> = ({
-    id,
-    screenX,
-    screenY,
-    selected,
+    x,
+    y,
     onMouseDown,
     onStartConnection,
     onEndConnection,
@@ -33,14 +30,16 @@ export const ConsoleNode: React.FC<ConsoleNodeProps> = ({
 }) => {
     const SIZE = 150;
 
+    const selected = useStore((state) => state.selectedNode?.id === node.id);
+
     return (
         <BaseNode
-            screenX={screenX}
-            screenY={screenY}
+            screenX={x}
+            screenY={y}
             width={SIZE}
             height={SIZE}
             selected={selected}
-            id={id}
+            id={node.id}
             onMouseDown={onMouseDown}
             node={node}
             onStartConnection={onStartConnection}
