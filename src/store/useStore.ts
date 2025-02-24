@@ -93,7 +93,6 @@ const useStore = create<Store>((set, get) => ({
         }),
 
     updateNode: (node: GraphNode) => {
-        console.log("Update");
         set((state) => {
             const nodes = new Map(state.nodes);
             const newNode = { ...node };
