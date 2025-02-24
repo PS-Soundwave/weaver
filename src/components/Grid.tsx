@@ -57,16 +57,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     return (
         <div
             ref={menuRef}
-            style={{
-                position: "absolute",
-                left: x,
-                top: y,
-                backgroundColor: "rgb(31, 41, 55)",
-                border: "1px solid rgb(75, 85, 99)",
-                borderRadius: "4px",
-                padding: "4px 0",
-                zIndex: 1000
-            }}
+            className="absolute z-50 rounded border border-gray-700 bg-gray-800 py-1"
+            style={{ left: x, top: y }}
+            onClick={(e) => e.stopPropagation()}
         >
             <button
                 onMouseDown={(e) => {
@@ -244,14 +237,85 @@ const BG_COLOR = "rgba(17, 24, 39, 0.3)"; // Dark grey background
 const GRID_SIZE = 50;
 const MAJOR_GRID_SIZE = 250;
 
+interface NodeContextMenuProps {
+    x: number;
+    y: number;
+    nodeId: string;
+    onRemoveNode: (_id: string) => void;
+    onClose: () => void;
+}
+
+const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
+    x,
+    y,
+    nodeId,
+    onRemoveNode,
+    onClose
+}) => {
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: globalThis.MouseEvent) => {
+            if (
+                menuRef.current &&
+                !menuRef.current.contains(e.target as Element)
+            ) {
+                onClose();
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside, true);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside, true);
+        };
+    }, [onClose]);
+
+    const buttonStyle = {
+        display: "block",
+        width: "100%",
+        padding: "8px 16px",
+        textAlign: "left" as const,
+        backgroundColor: "transparent",
+        border: "none",
+        color: "white",
+        cursor: "pointer"
+    };
+
+    return (
+        <div
+            className="absolute z-50 rounded border border-gray-700 bg-gray-800 py-1"
+            style={{ left: x, top: y }}
+            onClick={(e) => e.stopPropagation()}
+            ref={menuRef}
+        >
+            <button
+                style={buttonStyle}
+                onClick={() => {
+                    onRemoveNode(nodeId);
+                    onClose();
+                }}
+                onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "rgb(55, 65, 81)")
+                }
+                onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                }
+            >
+                Remove Node
+            </button>
+        </div>
+    );
+};
+
 export const Grid: React.FC = () => {
     const {
         nodes,
         wires,
         selectedNode,
         addNode,
-        /*removeNode,*/ addWire,
-        /*removeWire,*/
+        removeNode,
+        addWire,
         setSelectedNode,
         updateNode
     } = useStore();
@@ -262,6 +326,11 @@ export const Grid: React.FC = () => {
     const [contextMenu, setContextMenu] = useState<{
         x: number;
         y: number;
+    } | null>(null);
+    const [nodeContextMenu, setNodeContextMenu] = useState<{
+        x: number;
+        y: number;
+        nodeId: string;
     } | null>(null);
     const [draggingNode, setDraggingNode] = useState<{
         id: string;
@@ -430,6 +499,19 @@ export const Grid: React.FC = () => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY });
     }, []);
+
+    const handleNodeContextMenu = useCallback(
+        (e: MouseEvent, nodeId: string) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setNodeContextMenu({
+                x: e.clientX,
+                y: e.clientY,
+                nodeId
+            });
+        },
+        [setNodeContextMenu]
+    );
 
     const getGridLines = () => {
         if (!containerRef.current) {
@@ -602,6 +684,7 @@ export const Grid: React.FC = () => {
                         onMouseDown={handleNodeMouseDown}
                         onStartConnection={handleStartConnection}
                         onEndConnection={handleEndConnection}
+                        onContextMenu={handleNodeContextMenu}
                     />
                 );
             })
@@ -611,7 +694,8 @@ export const Grid: React.FC = () => {
         position,
         handleStartConnection,
         handleEndConnection,
-        setSelectedNode
+        setSelectedNode,
+        handleNodeContextMenu
     ]);
 
     return (
@@ -639,6 +723,15 @@ export const Grid: React.FC = () => {
                     y={contextMenu.y}
                     onAddNode={addNodeCallback}
                     onClose={() => setContextMenu(null)}
+                />
+            )}
+            {nodeContextMenu && (
+                <NodeContextMenu
+                    x={nodeContextMenu.x}
+                    y={nodeContextMenu.y}
+                    nodeId={nodeContextMenu.nodeId}
+                    onRemoveNode={removeNode}
+                    onClose={() => setNodeContextMenu(null)}
                 />
             )}
         </div>

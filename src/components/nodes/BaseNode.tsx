@@ -21,12 +21,14 @@ interface BaseNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
 }
 
 export const BaseNode: React.FC<BaseNodeProps & React.PropsWithChildren> = ({
     onMouseDown,
     onStartConnection,
     onEndConnection,
+    onContextMenu,
     id,
     node,
     children,
@@ -43,6 +45,7 @@ export const BaseNode: React.FC<BaseNodeProps & React.PropsWithChildren> = ({
     return (
         <g
             onMouseDown={(e) => onMouseDown(e, id)}
+            onContextMenu={(e) => onContextMenu(e, id)}
             style={{ cursor: "pointer" }}
         >
             <rect

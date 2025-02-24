@@ -16,6 +16,7 @@ interface VectorDBRetrieveNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
     node: VectorDBRetrieveNodeModel;
 }
 
@@ -28,6 +29,7 @@ export const VectorDBRetrieveNode = ({
     onMouseDown,
     onStartConnection,
     onEndConnection,
+    onContextMenu,
     node
 }: VectorDBRetrieveNodeProps) => {
     const selected = useStore((state) => state.selectedNode?.id === node.id);
@@ -39,6 +41,7 @@ export const VectorDBRetrieveNode = ({
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
+            onContextMenu={onContextMenu}
             screenX={x}
             screenY={y}
             selected={selected}

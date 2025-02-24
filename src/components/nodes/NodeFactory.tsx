@@ -94,6 +94,7 @@ type NodeProps = {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
 };
 
 type NodeFactory = (_node: NewNode) => {

@@ -18,6 +18,7 @@ interface CaseNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
 }
 
 export const CaseNode: React.FC<CaseNodeProps> = ({
@@ -26,7 +27,8 @@ export const CaseNode: React.FC<CaseNodeProps> = ({
     node,
     onMouseDown,
     onStartConnection,
-    onEndConnection
+    onEndConnection,
+    onContextMenu
 }) => {
     const WIDTH = 80;
     const HEIGHT = 150;
@@ -42,6 +44,7 @@ export const CaseNode: React.FC<CaseNodeProps> = ({
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
+            onContextMenu={onContextMenu}
             selected={selected}
             width={WIDTH}
             height={HEIGHT}

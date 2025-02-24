@@ -16,6 +16,7 @@ interface VectorDBStoreNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
     node: VectorDBStoreNodeModel;
 }
 
@@ -25,6 +26,7 @@ export const VectorDBStoreNode = ({
     onMouseDown,
     onStartConnection,
     onEndConnection,
+    onContextMenu,
     node
 }: VectorDBStoreNodeProps) => {
     const WIDTH = 150;
@@ -39,6 +41,7 @@ export const VectorDBStoreNode = ({
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
+            onContextMenu={onContextMenu}
             screenX={x}
             screenY={y}
             selected={selected}

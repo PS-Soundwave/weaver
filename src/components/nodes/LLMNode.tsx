@@ -17,6 +17,7 @@ interface LLMNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
     node: LLMNodeModel;
 }
 
@@ -26,7 +27,8 @@ export const LLMNode: React.FC<LLMNodeProps> = ({
     y,
     onMouseDown,
     onStartConnection,
-    onEndConnection
+    onEndConnection,
+    onContextMenu
 }) => {
     const selected = useStore((state) => state.selectedNode?.id === node.id);
 
@@ -39,6 +41,7 @@ export const LLMNode: React.FC<LLMNodeProps> = ({
             onMouseDown={onMouseDown}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
+            onContextMenu={onContextMenu}
             node={node}
             screenX={x}
             screenY={y}

@@ -17,6 +17,7 @@ interface ConsoleNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
     node: ConsoleNodeModel;
 }
 
@@ -26,6 +27,7 @@ export const ConsoleNode: React.FC<ConsoleNodeProps> = ({
     onMouseDown,
     onStartConnection,
     onEndConnection,
+    onContextMenu,
     node
 }) => {
     const SIZE = 150;
@@ -44,6 +46,7 @@ export const ConsoleNode: React.FC<ConsoleNodeProps> = ({
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
+            onContextMenu={onContextMenu}
         >
             Start
         </BaseNode>

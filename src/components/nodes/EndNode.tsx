@@ -17,6 +17,7 @@ interface EndNodeProps {
         _type: "input" | "output",
         _nodeId: string
     ) => void;
+    onContextMenu: (_e: React.MouseEvent, _id: string) => void;
     node: EndNodeModel;
 }
 
@@ -29,6 +30,7 @@ export const EndNode: React.FC<EndNodeProps> = ({
     onMouseDown,
     onStartConnection,
     onEndConnection,
+    onContextMenu,
     node
 }) => {
     const selected = useStore((state) => state.selectedNode?.id === node.id);
@@ -40,6 +42,7 @@ export const EndNode: React.FC<EndNodeProps> = ({
             node={node}
             onStartConnection={onStartConnection}
             onEndConnection={onEndConnection}
+            onContextMenu={onContextMenu}
             screenX={x}
             screenY={y}
             selected={selected}
