@@ -21,6 +21,9 @@ interface LLMNodeProps {
     node: LLMNodeModel;
 }
 
+export const WIDTH = 120;
+export const HEIGHT = 80;
+
 export const LLMNode: React.FC<LLMNodeProps> = ({
     node,
     x,
@@ -31,9 +34,6 @@ export const LLMNode: React.FC<LLMNodeProps> = ({
     onContextMenu
 }) => {
     const selected = useStore((state) => state.selectedNode?.id === node.id);
-
-    const WIDTH = 120;
-    const HEIGHT = 80;
 
     return (
         <BaseNode

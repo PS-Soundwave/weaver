@@ -20,6 +20,9 @@ interface VectorDBStoreNodeProps {
     node: VectorDBStoreNodeModel;
 }
 
+export const WIDTH = 160;
+export const HEIGHT = 80;
+
 export const VectorDBStoreNode = ({
     x,
     y,
@@ -29,9 +32,6 @@ export const VectorDBStoreNode = ({
     onContextMenu,
     node
 }: VectorDBStoreNodeProps) => {
-    const WIDTH = 150;
-    const HEIGHT = 80;
-
     const selected = useStore((state) => state.selectedNode?.id === node.id);
 
     return (

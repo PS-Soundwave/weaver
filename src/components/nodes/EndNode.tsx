@@ -21,8 +21,8 @@ interface EndNodeProps {
     node: EndNodeModel;
 }
 
-const WIDTH = 120;
-const HEIGHT = 50;
+export const WIDTH = 80;
+export const HEIGHT = 80;
 
 export const EndNode: React.FC<EndNodeProps> = ({
     x,

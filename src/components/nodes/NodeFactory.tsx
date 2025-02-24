@@ -7,15 +7,25 @@ import {
     Store
 } from "@/store/useStore";
 import { CasePanel } from "./Case/CasePanel";
-import { CaseNode } from "./CaseNode";
+import {
+    HEIGHT as CASE_HEIGHT,
+    WIDTH as CASE_WIDTH,
+    CaseNode
+} from "./CaseNode";
 import ConsolePanel from "./Console/ConsolePanel";
-import { ConsoleNode } from "./ConsoleNode";
+import { SIZE as CONSOLE_SIZE, ConsoleNode } from "./ConsoleNode";
 import { EndPanel } from "./End/EndPanel";
-import { EndNode } from "./EndNode";
+import { WIDTH as END_WIDTH, EndNode } from "./EndNode";
 import LLMPanel from "./LLM/LLMPanel";
-import { LLMNode } from "./LLMNode";
-import { VectorDBRetrieveNode } from "./VectorDBRetrieveNode";
-import { VectorDBStoreNode } from "./VectorDBStoreNode";
+import { WIDTH as LLM_WIDTH, LLMNode } from "./LLMNode";
+import {
+    WIDTH as VDB_RETRIEVE_WIDTH,
+    VectorDBRetrieveNode
+} from "./VectorDBRetrieveNode";
+import {
+    WIDTH as VDB_STORE_WIDTH,
+    VectorDBStoreNode
+} from "./VectorDBStoreNode";
 
 type NewBaseNode = {
     id: string;
@@ -129,7 +139,6 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                 Panel: <LLMPanel node={node} />,
                 name: "LLM",
                 getConnectors: (x: number, y: number) => {
-                    const LLM_WIDTH = 120;
                     return [
                         {
                             id: `${node.id}-input`,
@@ -213,8 +222,6 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                 Panel: <EndPanel node={node} />,
                 name: "End",
                 getConnectors: (x: number, y: number) => {
-                    const END_WIDTH = 120;
-
                     return [
                         {
                             id: `${node.id}-input`,
@@ -244,26 +251,23 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                 Panel: <CasePanel node={node} />,
                 name: "Case",
                 getConnectors: (x: number, y: number) => {
-                    const WIDTH = 80;
-                    const HEIGHT = 150;
-
                     const connectors: Connector[] = [
                         {
                             id: `${node.id}-input`,
                             type: "input",
-                            x: x - WIDTH / 2,
+                            x: x - CASE_WIDTH / 2,
                             y
                         }
                     ];
-                    const spacing = HEIGHT / (node.state.cases.length + 1);
+                    const spacing = CASE_HEIGHT / (node.state.cases.length + 1);
 
                     // Add an output connector for each case
                     node.state.cases.forEach((caseValue, index) => {
                         connectors.push({
                             id: `${node.id}-output-${caseValue}`,
                             type: "output",
-                            x: x + WIDTH / 2,
-                            y: y - HEIGHT / 2 + spacing * (index + 1)
+                            x: x + CASE_WIDTH / 2,
+                            y: y - CASE_HEIGHT / 2 + spacing * (index + 1)
                         });
                     });
 
@@ -331,7 +335,6 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                 Panel: <ConsolePanel node={node} />,
                 name: "Start",
                 getConnectors: (x: number, y: number) => {
-                    const CONSOLE_SIZE = 150;
                     return [
                         {
                             id: `${node.id}-output`,
@@ -372,24 +375,20 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                     </div>
                 ),
                 name: "Vector DB Storage",
-                getConnectors: (x: number, y: number) => {
-                    const WIDTH = 150;
-
-                    return [
-                        {
-                            id: `${node.id}-input`,
-                            type: "input",
-                            x: x - WIDTH / 2,
-                            y
-                        },
-                        {
-                            id: `${node.id}-output`,
-                            type: "output",
-                            x: x + WIDTH / 2,
-                            y
-                        }
-                    ];
-                },
+                getConnectors: (x: number, y: number) => [
+                    {
+                        id: `${node.id}-input`,
+                        type: "input",
+                        x: x - VDB_STORE_WIDTH / 2,
+                        y
+                    },
+                    {
+                        id: `${node.id}-output`,
+                        type: "output",
+                        x: x + VDB_STORE_WIDTH / 2,
+                        y
+                    }
+                ],
                 call: async (state: Store, input: string) => {
                     state.setActiveNode(node);
                     // Add delay based on execution speed setting
@@ -455,24 +454,20 @@ export const getNodeFactory: NodeFactory = (node: GraphNode) => {
                     </div>
                 ),
                 name: "Vector DB Retrieval",
-                getConnectors: (x: number, y: number) => {
-                    const WIDTH = 150;
-
-                    return [
-                        {
-                            id: `${node.id}-input`,
-                            type: "input",
-                            x: x - WIDTH / 2,
-                            y
-                        },
-                        {
-                            id: `${node.id}-output`,
-                            type: "output",
-                            x: x + WIDTH / 2,
-                            y
-                        }
-                    ];
-                },
+                getConnectors: (x: number, y: number) => [
+                    {
+                        id: `${node.id}-input`,
+                        type: "input",
+                        x: x - VDB_RETRIEVE_WIDTH / 2,
+                        y
+                    },
+                    {
+                        id: `${node.id}-output`,
+                        type: "output",
+                        x: x + VDB_RETRIEVE_WIDTH / 2,
+                        y
+                    }
+                ],
                 call: async (state: Store, input: string) => {
                     state.setActiveNode(node);
                     // Add delay based on execution speed setting

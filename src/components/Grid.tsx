@@ -308,7 +308,7 @@ const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
     );
 };
 
-export const Grid: React.FC = () => {
+export const Grid: React.FC<{ height: number }> = ({ height }) => {
     const {
         nodes,
         wires,
@@ -345,7 +345,6 @@ export const Grid: React.FC = () => {
         startY: number;
     } | null>(null);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const containerRef = useRef<HTMLDivElement>(null);
 
     const addNodeCallback = useCallback(
         (f: (_x: number, _y: number) => GraphNode) => {
@@ -353,19 +352,14 @@ export const Grid: React.FC = () => {
                 return;
             }
 
-            const rect = containerRef.current?.getBoundingClientRect();
-
-            if (!rect) {
-                return;
-            }
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
+            const centerX = document.documentElement.clientWidth / 2;
+            const centerY = height / 2;
             const gridX = contextMenu.x - centerX + position.x;
             const gridY = contextMenu.y - centerY + position.y;
 
             addNode(f(gridX, gridY));
         },
-        [addNode, contextMenu, position]
+        [addNode, contextMenu, position, height]
     );
 
     const handleMouseDown = useCallback(
@@ -414,14 +408,8 @@ export const Grid: React.FC = () => {
                 return;
             }
 
-            if (containerRef.current === null) {
-                return;
-            }
-
-            const rect = containerRef.current.getBoundingClientRect();
-
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
+            const centerX = document.documentElement.clientWidth / 2;
+            const centerY = height / 2;
             const connectors = getNodeFactory(node).getConnectors(
                 node.x - position.x + centerX,
                 node.y - position.y + centerY
@@ -440,7 +428,7 @@ export const Grid: React.FC = () => {
                 startY: connector.y
             });
         },
-        [nodes, position]
+        [nodes, position, height]
     );
 
     const handleEndConnection = useCallback(
@@ -514,20 +502,15 @@ export const Grid: React.FC = () => {
     );
 
     const getGridLines = () => {
-        if (!containerRef.current) {
-            return [];
-        }
-
         const lines = [];
-        const rect = containerRef.current.getBoundingClientRect();
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
+        const centerX = document.documentElement.clientWidth / 2;
+        const centerY = height / 2;
         const startX =
             Math.ceil((position.x - centerX) / GRID_SIZE) * GRID_SIZE;
         const startY =
             Math.ceil((position.y - centerY) / GRID_SIZE) * GRID_SIZE;
-        const endX = rect.width + startX;
-        const endY = rect.height + startY;
+        const endX = document.documentElement.clientWidth + startX;
+        const endY = height + startY;
 
         // Draw minor grid lines
         for (let x = startX; x <= endX; x += GRID_SIZE) {
@@ -539,7 +522,7 @@ export const Grid: React.FC = () => {
                     x1={x - position.x + centerX}
                     y1={0}
                     x2={x - position.x + centerX}
-                    y2={rect.height}
+                    y2={height}
                     stroke={
                         isOrigin
                             ? ORIGIN_COLOR
@@ -560,7 +543,7 @@ export const Grid: React.FC = () => {
                     key={`h${y}`}
                     x1={0}
                     y1={y - position.y + centerY}
-                    x2={rect.width}
+                    x2={document.documentElement.clientWidth}
                     y2={y - position.y + centerY}
                     stroke={
                         isOrigin
@@ -578,13 +561,8 @@ export const Grid: React.FC = () => {
     };
 
     const renderWires = useCallback(() => {
-        if (!containerRef.current) {
-            return [];
-        }
-
-        const rect = containerRef.current.getBoundingClientRect();
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
+        const centerX = document.documentElement.clientWidth / 2;
+        const centerY = height / 2;
 
         const wiredElements = Array.from(
             wires.values().map((wire) => {
@@ -642,17 +620,19 @@ export const Grid: React.FC = () => {
         }
 
         return wiredElements;
-    }, [wires, nodes, position, selectedNode?.id, draggingWire, mousePosition]);
+    }, [
+        wires,
+        nodes,
+        position,
+        selectedNode?.id,
+        draggingWire,
+        mousePosition,
+        height
+    ]);
 
     const renderNodes = useCallback(() => {
-        if (!containerRef.current) {
-            return null;
-        }
-
-        const rect = containerRef.current?.getBoundingClientRect();
-
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
+        const centerX = document.documentElement.clientWidth / 2;
+        const centerY = height / 2;
 
         return Array.from(
             nodes.values().map((node) => {
@@ -695,12 +675,12 @@ export const Grid: React.FC = () => {
         handleStartConnection,
         handleEndConnection,
         setSelectedNode,
-        handleNodeContextMenu
+        handleNodeContextMenu,
+        height
     ]);
 
     return (
         <div
-            ref={containerRef}
             className="h-full w-full overflow-hidden"
             style={{
                 backgroundColor: BG_COLOR,

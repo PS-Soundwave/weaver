@@ -21,6 +21,8 @@ interface ConsoleNodeProps {
     node: ConsoleNodeModel;
 }
 
+export const SIZE = 80;
+
 export const ConsoleNode: React.FC<ConsoleNodeProps> = ({
     x,
     y,
@@ -30,8 +32,6 @@ export const ConsoleNode: React.FC<ConsoleNodeProps> = ({
     onContextMenu,
     node
 }) => {
-    const SIZE = 150;
-
     const selected = useStore((state) => state.selectedNode?.id === node.id);
 
     return (

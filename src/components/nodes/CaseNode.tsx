@@ -21,6 +21,9 @@ interface CaseNodeProps {
     onContextMenu: (_e: React.MouseEvent, _id: string) => void;
 }
 
+export const WIDTH = 80;
+export const HEIGHT = 160;
+
 export const CaseNode: React.FC<CaseNodeProps> = ({
     x,
     y,
@@ -30,9 +33,6 @@ export const CaseNode: React.FC<CaseNodeProps> = ({
     onEndConnection,
     onContextMenu
 }) => {
-    const WIDTH = 80;
-    const HEIGHT = 150;
-
     const selected = useStore((state) => state.selectedNode?.id === node.id);
 
     return (

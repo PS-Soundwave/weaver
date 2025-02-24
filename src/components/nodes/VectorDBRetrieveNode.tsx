@@ -20,8 +20,8 @@ interface VectorDBRetrieveNodeProps {
     node: VectorDBRetrieveNodeModel;
 }
 
-const WIDTH = 150;
-const HEIGHT = 80;
+export const WIDTH = 160;
+export const HEIGHT = 80;
 
 export const VectorDBRetrieveNode = ({
     x,

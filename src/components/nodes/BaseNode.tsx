@@ -65,6 +65,7 @@ export const BaseNode: React.FC<BaseNodeProps & React.PropsWithChildren> = ({
                 dominantBaseline="middle"
                 fill="white"
                 fontSize={14}
+                className="select-none"
             >
                 {children}
             </text>
