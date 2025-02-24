@@ -1,10 +1,10 @@
 import React from "react";
 import useStore from "@/store/useStore";
-import { getNodeFactory, NewNode } from "./NodeFactory";
+import { getNodeFactory, Node } from "./NodeFactory";
 
 interface BaseNodeProps {
     id: string;
-    node: NewNode;
+    node: Node;
     screenX: number;
     screenY: number;
     width: number;

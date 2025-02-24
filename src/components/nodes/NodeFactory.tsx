@@ -65,7 +65,7 @@ export type VectorDBRetrieveNode = NewBaseNode & {
     state: Record<string, never>;
 };
 
-export type NewNode =
+export type Node =
     | LLMNode
     | ConsoleNode
     | EndNode
@@ -97,7 +97,7 @@ type NodeProps = {
     onContextMenu: (_e: React.MouseEvent, _id: string) => void;
 };
 
-type NodeFactory = (_node: NewNode) => {
+type NodeFactory = (_node: Node) => {
     Node: React.FC<NodeProps>;
     Panel: React.FC;
     getConnectors: (_x: number, _y: number) => Connector[];
@@ -119,7 +119,7 @@ const getDelayForSpeed = (
     }
 };
 
-export const getNodeFactory: NodeFactory = (node: NewNode) => {
+export const getNodeFactory: NodeFactory = (node: Node) => {
     switch (node.type) {
         case "llm":
             return {

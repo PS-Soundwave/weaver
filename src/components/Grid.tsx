@@ -1,6 +1,6 @@
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import useStore from "@/store/useStore";
-import { getNodeFactory, NewNode } from "./nodes/NodeFactory";
+import { getNodeFactory, Node } from "./nodes/NodeFactory";
 import { SettingsMenu } from "./SettingsMenu";
 
 interface Wire {
@@ -14,7 +14,7 @@ interface Wire {
 interface ContextMenuProps {
     x: number;
     y: number;
-    onAddNode: (_f: (_x: number, _y: number) => NewNode) => void;
+    onAddNode: (_f: (_x: number, _y: number) => Node) => void;
     onClose: () => void;
 }
 
@@ -348,7 +348,7 @@ export const Grid: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const addNodeCallback = useCallback(
-        (f: (_x: number, _y: number) => NewNode) => {
+        (f: (_x: number, _y: number) => Node) => {
             if (!contextMenu) {
                 return;
             }

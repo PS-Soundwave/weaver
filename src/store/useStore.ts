@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { NewNode } from "../lib/nodes";
+import { Node } from "@/components/nodes/NodeFactory";
 
 interface Wire {
     id: string;
@@ -10,19 +10,19 @@ interface Wire {
 }
 
 export interface Store {
-    nodes: Map<string, NewNode>;
+    nodes: Map<string, Node>;
     wires: Map<string, Wire>;
-    selectedNode: NewNode | null;
-    activeNode: NewNode | null;
+    selectedNode: Node | null;
+    activeNode: Node | null;
     openAIKey: string;
     executionSpeed: "realtime" | "fast" | "medium" | "slow";
-    addNode: (_node: NewNode) => void;
+    addNode: (_node: Node) => void;
     removeNode: (_id: string) => void;
     addWire: (_wire: Wire) => void;
     removeWire: (_id: string) => void;
-    setSelectedNode: (_node: NewNode | null) => void;
-    setActiveNode: (_node: NewNode | null) => void;
-    updateNode: (_node: NewNode) => void;
+    setSelectedNode: (_node: Node | null) => void;
+    setActiveNode: (_node: Node | null) => void;
+    updateNode: (_node: Node) => void;
     setOpenAIKey: (_key: string) => void;
     setExecutionSpeed: (
         _speed: "realtime" | "fast" | "medium" | "slow"
@@ -37,17 +37,17 @@ const useStore = create<Store>((set) => ({
     openAIKey: "",
     executionSpeed: "medium",
 
-    addNode: (node: NewNode) =>
+    addNode: (node: Node) =>
         set((state) => {
-            const newNodes = new Map(state.nodes);
-            newNodes.set(node.id, node);
-            return { nodes: newNodes };
+            const Nodes = new Map(state.nodes);
+            Nodes.set(node.id, node);
+            return { nodes: Nodes };
         }),
 
     removeNode: (id: string) =>
         set((state) => {
-            const newNodes = new Map(state.nodes);
-            newNodes.delete(id);
+            const Nodes = new Map(state.nodes);
+            Nodes.delete(id);
 
             const newWires = new Map(state.wires);
             for (const [wireId, wire] of state.wires) {
@@ -57,7 +57,7 @@ const useStore = create<Store>((set) => ({
             }
 
             return {
-                nodes: newNodes,
+                nodes: Nodes,
                 wires: newWires,
                 selectedNode:
                     state.selectedNode?.id === id ? null : state.selectedNode
@@ -80,23 +80,23 @@ const useStore = create<Store>((set) => ({
             };
         }),
 
-    setSelectedNode: (node: NewNode | null) =>
+    setSelectedNode: (node: Node | null) =>
         set({
             selectedNode: node
         }),
 
-    setActiveNode: (node: NewNode | null) =>
+    setActiveNode: (node: Node | null) =>
         set({
             activeNode: node
         }),
 
-    updateNode: (node: NewNode) => {
+    updateNode: (node: Node) => {
         set((state) => {
-            const newNodes = new Map(state.nodes);
-            const newNode = { ...node };
-            newNode.state = { ...node.state };
-            newNodes.set(node.id, newNode);
-            return { nodes: newNodes };
+            const Nodes = new Map(state.nodes);
+            const Node = { ...node };
+            Node.state = { ...node.state };
+            Nodes.set(node.id, Node);
+            return { nodes: Nodes };
         });
     },
 
