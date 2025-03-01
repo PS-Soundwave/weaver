@@ -1,6 +1,6 @@
 # Contributing to Weaver
 
-You input is appreciated. All of these are on-topic in issues or pull requests:
+Your input is appreciated. All of these are on-topic in issues or pull requests:
 
 - Reporting a bug
 - Discussing the current state of the code
@@ -42,7 +42,7 @@ Feel free to submit a pull request with any changes you'd like to contribute. **
 
 **Great Bug Reports** tend to have:
 
-- A brief background an dsummary
+- A brief background and summary
 - Steps to reproduce
     - Be specific! Demo it if possible
 - What you expected would happen
